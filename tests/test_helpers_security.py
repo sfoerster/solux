@@ -52,7 +52,6 @@ class TestInterpolateEnv:
     def test_warn_missing_false_suppresses_warning(self, monkeypatch, caplog) -> None:
         monkeypatch.delenv("QUIET_MISSING_VAR", raising=False)
         import logging
-
         with caplog.at_level(logging.WARNING):
             interpolate_env("${env:QUIET_MISSING_VAR}", warn_missing=False)
         assert not any("QUIET_MISSING_VAR" in r.message for r in caplog.records)
@@ -99,7 +98,6 @@ class TestIsPrivateIp:
 class TestResolvedIps:
     def test_resolution_failure_returns_empty(self) -> None:
         import socket
-
         with patch("solus.modules._helpers.socket.getaddrinfo", side_effect=socket.gaierror("nope")):
             assert _resolved_ips("nonexistent.invalid") == set()
 

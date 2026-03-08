@@ -1010,6 +1010,9 @@ def test_worker_invokes_on_step_complete_and_persists_step_progress(tmp_path: Pa
     """The worker's _on_step_complete closure writes step_progress into context.json."""
     cache_dir = tmp_path / "cache"
     config = _make_config(cache_dir)
+    trigger_dir = tmp_path / "empty-triggers"
+    trigger_dir.mkdir()
+    config = dataclasses.replace(config, triggers_dir=trigger_dir)
     enqueue_jobs(
         cache_dir,
         sources=["progress-test.pdf"],
