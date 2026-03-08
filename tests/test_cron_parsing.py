@@ -16,6 +16,7 @@ def _dt(minute=0, hour=0, day=1, month=1, year=2026, weekday_target=None):
 # Wildcard
 # ---------------------------------------------------------------------------
 
+
 def test_all_wildcards_always_matches() -> None:
     assert _cron_matches("* * * * *", _dt(minute=0, hour=0)) is True
     assert _cron_matches("* * * * *", _dt(minute=59, hour=23, day=31, month=12)) is True
@@ -24,6 +25,7 @@ def test_all_wildcards_always_matches() -> None:
 # ---------------------------------------------------------------------------
 # Exact values
 # ---------------------------------------------------------------------------
+
 
 def test_exact_minute() -> None:
     assert _cron_matches("30 * * * *", _dt(minute=30)) is True
@@ -48,6 +50,7 @@ def test_exact_month() -> None:
 # ---------------------------------------------------------------------------
 # Step values (*/n)
 # ---------------------------------------------------------------------------
+
 
 def test_step_minute() -> None:
     assert _cron_matches("*/15 * * * *", _dt(minute=0)) is True
@@ -74,6 +77,7 @@ def test_step_invalid_value_returns_false() -> None:
 # Comma-separated lists
 # ---------------------------------------------------------------------------
 
+
 def test_comma_list_minute() -> None:
     assert _cron_matches("0,15,30,45 * * * *", _dt(minute=15)) is True
     assert _cron_matches("0,15,30,45 * * * *", _dt(minute=10)) is False
@@ -87,6 +91,7 @@ def test_comma_list_hour() -> None:
 # ---------------------------------------------------------------------------
 # Range values (a-b)
 # ---------------------------------------------------------------------------
+
 
 def test_range_minute() -> None:
     assert _cron_matches("10-20 * * * *", _dt(minute=15)) is True
@@ -103,6 +108,7 @@ def test_range_hour() -> None:
 # ---------------------------------------------------------------------------
 # Day-of-week (Sunday=0 or 7)
 # ---------------------------------------------------------------------------
+
 
 def test_dow_monday() -> None:
     # 2026-01-05 is a Monday (weekday()=0, cron dow=1)
@@ -133,9 +139,9 @@ def test_dow_range_weekdays() -> None:
 
 def test_dow_wrap_around() -> None:
     # 5-0 means Friday through Sunday (wrap around)
-    friday = datetime(2026, 1, 2, 0, 0, tzinfo=timezone.utc)   # Friday
-    sunday = datetime(2026, 1, 4, 0, 0, tzinfo=timezone.utc)   # Sunday
-    wednesday = datetime(2026, 1, 7, 0, 0, tzinfo=timezone.utc) # Wednesday
+    friday = datetime(2026, 1, 2, 0, 0, tzinfo=timezone.utc)  # Friday
+    sunday = datetime(2026, 1, 4, 0, 0, tzinfo=timezone.utc)  # Sunday
+    wednesday = datetime(2026, 1, 7, 0, 0, tzinfo=timezone.utc)  # Wednesday
     assert _cron_matches("* * * * 5-0", friday) is True
     assert _cron_matches("* * * * 5-0", sunday) is True
     assert _cron_matches("* * * * 5-0", wednesday) is False
@@ -144,6 +150,7 @@ def test_dow_wrap_around() -> None:
 # ---------------------------------------------------------------------------
 # Edge cases and invalid expressions
 # ---------------------------------------------------------------------------
+
 
 def test_too_few_fields() -> None:
     assert _cron_matches("* * *", _dt()) is False
@@ -174,6 +181,7 @@ def test_invalid_range_non_numeric() -> None:
 # ---------------------------------------------------------------------------
 # Combined / real-world expressions
 # ---------------------------------------------------------------------------
+
 
 def test_weekday_mornings() -> None:
     # 0 8 * * 1-5 → 8:00 AM on weekdays

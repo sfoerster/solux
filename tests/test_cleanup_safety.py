@@ -214,12 +214,16 @@ class TestCollectFinishedTargets:
 
 class TestCollectArtifactTargets:
     def test_includes_non_result_files(self, tmp_path: Path) -> None:
-        _create_source(tmp_path, "s1", {
-            "transcript.txt": "result",
-            "metadata.json": "{}",
-            "audio.wav": "raw data",
-            "normalized.wav": "processed",
-        })
+        _create_source(
+            tmp_path,
+            "s1",
+            {
+                "transcript.txt": "result",
+                "metadata.json": "{}",
+                "audio.wav": "raw data",
+                "normalized.wav": "processed",
+            },
+        )
         targets = _collect_artifact_targets(tmp_path, source_id=None)
         artifact_names = {t.path.name for t in targets}
         assert "audio.wav" in artifact_names
@@ -336,10 +340,14 @@ class TestRunCleanupDeletion:
 
     def test_artifacts_only_keeps_results(self, tmp_path: Path) -> None:
         cache_dir = tmp_path / "cache"
-        _create_source(cache_dir, "s1", {
-            "audio.wav": "raw",
-            "transcript.txt": "result",
-        })
+        _create_source(
+            cache_dir,
+            "s1",
+            {
+                "audio.wav": "raw",
+                "transcript.txt": "result",
+            },
+        )
         config = _make_config(cache_dir)
         rc = run_cleanup(config, yes=True, artifacts_only=True)
         assert rc == 0

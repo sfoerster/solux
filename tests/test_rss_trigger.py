@@ -62,10 +62,12 @@ def _make_atom_xml(entries: list[tuple[str, str]]) -> bytes:
 
 class TestFetchItems:
     def test_parse_rss_items(self, tmp_path: Path) -> None:
-        rss_xml = _make_rss_xml([
-            ("guid1", "http://example.com/1"),
-            ("guid2", "http://example.com/2"),
-        ])
+        rss_xml = _make_rss_xml(
+            [
+                ("guid1", "http://example.com/1"),
+                ("guid2", "http://example.com/2"),
+            ]
+        )
         resp = MagicMock()
         resp.content = rss_xml
 
@@ -87,10 +89,12 @@ class TestFetchItems:
         The guid is still extracted correctly via findtext; the link comes
         back empty because find()..or..find() fails.  This documents the
         current behaviour — fixing it is tracked separately."""
-        atom_xml = _make_atom_xml([
-            ("urn:entry:1", "http://example.com/entry/1"),
-            ("urn:entry:2", "http://example.com/entry/2"),
-        ])
+        atom_xml = _make_atom_xml(
+            [
+                ("urn:entry:1", "http://example.com/entry/1"),
+                ("urn:entry:2", "http://example.com/entry/2"),
+            ]
+        )
         resp = MagicMock()
         resp.content = atom_xml
 

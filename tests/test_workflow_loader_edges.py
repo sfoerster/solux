@@ -306,9 +306,13 @@ class TestWorkflowToDict:
             description="",
             steps=[
                 Step(
-                    name="s", type="t", config={},
-                    when="x > 0", foreach="items",
-                    timeout_seconds=30, on_error="fallback",
+                    name="s",
+                    type="t",
+                    config={},
+                    when="x > 0",
+                    foreach="items",
+                    timeout_seconds=30,
+                    on_error="fallback",
                 ),
             ],
         )
@@ -321,7 +325,8 @@ class TestWorkflowToDict:
 
     def test_optional_fields_omitted_when_none(self) -> None:
         wf = Workflow(
-            name="test", description="",
+            name="test",
+            description="",
             steps=[Step(name="s", type="t", config={})],
         )
         d = workflow_to_dict(wf)

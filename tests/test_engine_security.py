@@ -64,8 +64,11 @@ class TestEvaluateWhenForStep:
         """Normal steps fail-open on expression errors."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="safe_mod", version="0.1", category="transform",
-            description="", handler=_identity_handler,
+            name="safe_mod",
+            version="0.1",
+            category="transform",
+            description="",
+            handler=_identity_handler,
         )
         reg.register("transform.safe_mod", _identity_handler, spec=spec)
         # Bad expression → fail-open → True
@@ -75,8 +78,12 @@ class TestEvaluateWhenForStep:
         """trusted_only steps fail-closed on expression errors."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="webhook", version="0.1", category="output",
-            description="", handler=_identity_handler, safety="trusted_only",
+            name="webhook",
+            version="0.1",
+            category="output",
+            description="",
+            handler=_identity_handler,
+            safety="trusted_only",
         )
         reg.register("output.webhook", _identity_handler, spec=spec)
         # Bad expression → fail-closed → False (skip step)
@@ -86,8 +93,12 @@ class TestEvaluateWhenForStep:
         """trusted_only steps evaluate normally when expression is valid."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="webhook", version="0.1", category="output",
-            description="", handler=_identity_handler, safety="trusted_only",
+            name="webhook",
+            version="0.1",
+            category="output",
+            description="",
+            handler=_identity_handler,
+            safety="trusted_only",
         )
         reg.register("output.webhook", _identity_handler, spec=spec)
         assert _evaluate_when_for_step("x == 1", {"x": 1}, "output.webhook", reg) is True
@@ -109,8 +120,12 @@ class TestEnforceStepSafety:
         ctx = _ctx(mode="trusted")
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="webhook", version="0.1", category="output",
-            description="", handler=_identity_handler, safety="trusted_only",
+            name="webhook",
+            version="0.1",
+            category="output",
+            description="",
+            handler=_identity_handler,
+            safety="trusted_only",
         )
         reg.register("output.webhook", _identity_handler, spec=spec)
         # Should not raise
@@ -120,8 +135,12 @@ class TestEnforceStepSafety:
         ctx = _ctx(mode="untrusted")
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="webhook", version="0.1", category="output",
-            description="", handler=_identity_handler, safety="trusted_only",
+            name="webhook",
+            version="0.1",
+            category="output",
+            description="",
+            handler=_identity_handler,
+            safety="trusted_only",
         )
         reg.register("output.webhook", _identity_handler, spec=spec)
         with pytest.raises(RuntimeError, match="trusted-only module"):
@@ -131,8 +150,12 @@ class TestEnforceStepSafety:
         ctx = _ctx(mode="untrusted")
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="fetch", version="0.1", category="input",
-            description="", handler=_identity_handler, network=True,
+            name="fetch",
+            version="0.1",
+            category="input",
+            description="",
+            handler=_identity_handler,
+            network=True,
         )
         reg.register("input.fetch", _identity_handler, spec=spec)
         with pytest.raises(RuntimeError, match="network-enabled module"):
@@ -161,12 +184,17 @@ class TestTimeoutSafetyValidation:
         """Validation catches timeout on trusted_only modules before execution."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="webhook", version="0.1", category="output",
-            description="", handler=_identity_handler, safety="trusted_only",
+            name="webhook",
+            version="0.1",
+            category="output",
+            description="",
+            handler=_identity_handler,
+            safety="trusted_only",
         )
         reg.register("output.webhook", _identity_handler, spec=spec)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="send", type="output.webhook", config={}, timeout_seconds=30)],
         )
         ctx = _ctx()
@@ -177,12 +205,17 @@ class TestTimeoutSafetyValidation:
         """Validation catches timeout on network modules before execution."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="fetch", version="0.1", category="input",
-            description="", handler=_identity_handler, network=True,
+            name="fetch",
+            version="0.1",
+            category="input",
+            description="",
+            handler=_identity_handler,
+            network=True,
         )
         reg.register("input.fetch", _identity_handler, spec=spec)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="get", type="input.fetch", config={}, timeout_seconds=10)],
         )
         ctx = _ctx()
@@ -201,7 +234,8 @@ class TestForeachEdgeCases:
         reg = StepRegistry()
         reg.register("transform.noop", _identity_handler)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="iter", type="transform.noop", config={}, foreach="items")],
         )
         ctx = _ctx(data={"items": "not-a-list"})
@@ -213,7 +247,8 @@ class TestForeachEdgeCases:
         reg = StepRegistry()
         reg.register("transform.noop", _identity_handler)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="iter", type="transform.noop", config={}, foreach="nonexistent")],
         )
         ctx = _ctx()
@@ -231,13 +266,17 @@ class TestPostStepSchemaWarning:
         """Engine should warn when a module's declared writes are missing after execution."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="noop", version="0.1", category="transform",
-            description="", handler=_identity_handler,
+            name="noop",
+            version="0.1",
+            category="transform",
+            description="",
+            handler=_identity_handler,
             writes=(ContextKey("output_text", "Expected output"),),
         )
         reg.register("transform.noop", _identity_handler, spec=spec)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="do_nothing", type="transform.noop", config={})],
         )
         ctx = _ctx()
@@ -248,13 +287,17 @@ class TestPostStepSchemaWarning:
     def test_no_warning_when_write_key_present(self, caplog) -> None:
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="writer", version="0.1", category="transform",
-            description="", handler=_writing_handler,
+            name="writer",
+            version="0.1",
+            category="transform",
+            description="",
+            handler=_writing_handler,
             writes=(ContextKey("output_text", "Output"),),
         )
         reg.register("transform.writer", _writing_handler, spec=spec)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="write", type="transform.writer", config={})],
         )
         ctx = _ctx()
@@ -266,13 +309,17 @@ class TestPostStepSchemaWarning:
         """Internal keys starting with _ should not trigger warnings."""
         reg = StepRegistry()
         spec = ModuleSpec(
-            name="noop", version="0.1", category="transform",
-            description="", handler=_identity_handler,
+            name="noop",
+            version="0.1",
+            category="transform",
+            description="",
+            handler=_identity_handler,
             writes=(ContextKey("_internal", "Internal key"),),
         )
         reg.register("transform.noop", _identity_handler, spec=spec)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="step", type="transform.noop", config={})],
         )
         ctx = _ctx()
@@ -292,7 +339,8 @@ class TestOnErrorLoadFailure:
         reg = StepRegistry()
         reg.register("transform.fail", _failing_handler)
         workflow = Workflow(
-            name="test_wf", description="",
+            name="test_wf",
+            description="",
             steps=[Step(name="bad", type="transform.fail", config={}, on_error="nonexistent_wf")],
         )
         ctx = _ctx()

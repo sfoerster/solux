@@ -13,6 +13,7 @@ import ast
 # Unary operators
 # ---------------------------------------------------------------------------
 
+
 def test_unary_not_true() -> None:
     assert evaluate_when("not True", {}) is False
 
@@ -47,6 +48,7 @@ def test_unary_invert() -> None:
 # ---------------------------------------------------------------------------
 # Boolean short-circuit (and / or)
 # ---------------------------------------------------------------------------
+
 
 def test_and_short_circuit_false() -> None:
     assert evaluate_when("False and True", {}) is False
@@ -83,6 +85,7 @@ def test_and_or_combined() -> None:
 # Chained comparisons
 # ---------------------------------------------------------------------------
 
+
 def test_chained_comparison_true() -> None:
     assert evaluate_when("1 < x < 10", {"x": 5}) is True
 
@@ -104,6 +107,7 @@ def test_chained_comparison_three_ops() -> None:
 # ---------------------------------------------------------------------------
 # Ternary (IfExp)
 # ---------------------------------------------------------------------------
+
 
 def test_ternary_true_branch() -> None:
     tree = ast.parse("'yes' if x else 'no'", mode="eval")
@@ -127,6 +131,7 @@ def test_ternary_in_when() -> None:
 # ---------------------------------------------------------------------------
 # List / Tuple literals
 # ---------------------------------------------------------------------------
+
 
 def test_list_literal() -> None:
     tree = ast.parse("[1, 2, 3]", mode="eval")
@@ -162,6 +167,7 @@ def test_not_in_with_list() -> None:
 # None literal
 # ---------------------------------------------------------------------------
 
+
 def test_none_literal() -> None:
     tree = ast.parse("None", mode="eval")
     result = _eval_node(tree, {})
@@ -181,6 +187,7 @@ def test_is_not_none() -> None:
 # ---------------------------------------------------------------------------
 # Error handling / fail-open
 # ---------------------------------------------------------------------------
+
 
 def test_syntax_error_returns_true() -> None:
     """Malformed expressions should fail-open (return True)."""
@@ -206,6 +213,7 @@ def test_missing_variable_is_none() -> None:
 # ---------------------------------------------------------------------------
 # Safety check
 # ---------------------------------------------------------------------------
+
 
 def test_check_safe_rejects_call() -> None:
     tree = ast.parse("print(1)", mode="eval")
