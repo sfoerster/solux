@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import time
@@ -697,6 +698,9 @@ def test_enqueue_jobs_stores_model(tmp_path: Path) -> None:
 def test_worker_passes_model_to_execute_source_workflow(tmp_path: Path, monkeypatch) -> None:
     cache_dir = tmp_path / "cache"
     config = _make_config(cache_dir)
+    trigger_dir = tmp_path / "empty-triggers"
+    trigger_dir.mkdir()
+    config = dataclasses.replace(config, triggers_dir=trigger_dir)
     enqueue_jobs(
         cache_dir,
         sources=["ep-model.mp3"],
