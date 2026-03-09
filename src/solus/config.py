@@ -303,7 +303,7 @@ def build_bootstrap_config_toml() -> str:
         f'cli_path = "{_toml_escape(_shrink_home(whisper_cli))}"',
         f'model_path = "{_toml_escape(_shrink_home(whisper_model))}"',
         f"threads = {threads_default}",
-        "# language = \"en\"                      # Force language (default: auto-detect)",
+        '# language = "en"                      # Force language (default: auto-detect)',
         "# temperature = 0.2                    # Sampling temperature (lower = less repetition)",
         "# entropy_thold = 2.8                  # Entropy threshold for repetition detection",
         "# logprob_thold = -1.0                 # Log-probability threshold for segment filtering",
