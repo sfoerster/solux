@@ -16,24 +16,25 @@ Project process docs:
 - `docs/legal/CLA_TEMPLATE.md`
 - `docs/legal/CAA_TEMPLATE.md`
 
-## Quick Start (5 Minutes)
+## Quick Start (60 Seconds)
 
-Start with the lightweight `webpage_summary` workflow first.
+Only requires Ollama — no ffmpeg, whisper, or yt-dlp needed for your first run.
 
 ```bash
 pip install -e .
-solus config
-solus doctor --workflow webpage_summary
-solus run --workflow webpage_summary "https://example.com/article"
+solus init
+solus https://example.com/any-article
 ```
 
-This path only needs Ollama + a local model. If doctor reports a missing model, pull it:
+`solus init` creates your config, scaffolds a starter workflow, checks Ollama, and prints next steps. If doctor reports a missing model, pull it:
 
 ```bash
 ollama pull qwen3:8b
 ```
 
-The default shorthand command (`solus <source>`) uses `audio_summary`, which also requires `yt-dlp`, `ffmpeg`, and `whisper-cli`.
+The default workflow is `webpage_summary` (fetch + summarize). For audio transcription, see [docs/QUICK_START.md](docs/QUICK_START.md).
+
+> **Full quick start guide:** [docs/QUICK_START.md](docs/QUICK_START.md)
 
 ## Architecture
 
@@ -176,11 +177,12 @@ pip install -e '.[dev]'
 ## First-time Setup
 
 ```bash
-solus config           # create config.toml, print it, and run doctor
+solus init             # guided setup: create config, scaffold workflow, check Ollama
+solus config           # show config.toml and run doctor
 solus config edit      # open config.toml in $EDITOR (VISUAL / EDITOR / nano / vi)
 ```
 
-This creates `~/.config/solus/config.toml` (if missing), prints it, and runs `solus doctor`.
+`solus init` is the recommended first command — it creates `~/.config/solus/config.toml`, scaffolds a starter workflow, checks Ollama, and prints next steps.
 You can also edit the config directly in the web UI at `/config` (requires a server restart to take effect).
 
 ## Default Paths
@@ -217,12 +219,12 @@ All XML parsing (RSS feeds, Atom feeds) uses `defusedxml` to prevent XML entity 
 
 Solus is **terminal-first**: every capability available in the web UI is also available from the command line. The web UI is a convenience layer over the same operations.
 
-Direct shorthand (defaults to `ui.default_workflow`, which is `audio_summary` by default):
+Direct shorthand (defaults to `ui.default_workflow`, which is `webpage_summary` by default):
 
 ```bash
-solus "https://www.youtube.com/watch?v=VIDEOID"
-solus episode123.mp3 --mode tldr
-solus episode123.mp3 --mode full --format json --output ep123-summary.json
+solus "https://example.com/article"
+solus "https://www.youtube.com/watch?v=VIDEOID" --workflow audio_summary
+solus episode123.mp3 --workflow audio_summary --mode tldr
 ```
 
 Explicit run/workflow usage:
@@ -263,8 +265,10 @@ solus modules inspect ai.llm_summarize
 Configuration:
 
 ```bash
+solus init                            # guided first-run setup
 solus config                          # create/show config.toml and run doctor
 solus config edit                     # open config.toml in $EDITOR
+solus examples                        # print example workflow YAML templates
 ```
 
 Queue + worker + UI:
@@ -282,9 +286,10 @@ solus serve
 Maintenance:
 
 ```bash
-solus doctor
-solus doctor --workflow webpage_summary
-solus doctor --workflow audio_summary
+solus doctor                              # check deps for your workflows (scoped)
+solus doctor --all                        # check all dependencies
+solus doctor --fix                        # show copy-pasteable fix commands
+solus doctor --workflow audio_summary     # check one workflow's deps
 solus cleanup --dry-run
 solus retry
 solus repair
@@ -881,7 +886,7 @@ dir = "~/.config/solus/modules.d"
 dir = "~/.config/solus/triggers.d"
 
 [ui]
-default_workflow = "audio_summary"
+default_workflow = "webpage_summary"
 
 [security]
 mode = "trusted"               # "trusted" | "untrusted"

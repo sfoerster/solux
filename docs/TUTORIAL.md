@@ -59,9 +59,11 @@ Solus delegates heavy lifting to external tools that must be installed separatel
 ### First-time setup
 
 ```bash
-solus config    # Creates ~/.config/solus/config.toml with defaults
-solus doctor    # Verifies that all required external tools are found
+solus init      # Guided setup: create config, scaffold workflow, check Ollama
+solus doctor    # Verify dependencies (scoped to your workflows by default)
 ```
+
+`solus init` is the recommended first command. It creates `~/.config/solus/config.toml`, scaffolds a starter workflow, checks Ollama, and prints next steps. See also the [Quick Start guide](QUICK_START.md).
 
 ---
 
@@ -70,21 +72,23 @@ solus doctor    # Verifies that all required external tools are found
 ### Summarize a webpage
 
 ```bash
-solus run --workflow webpage_summary "https://example.com/article"
+solus https://example.com/article
 ```
+
+The default workflow is `webpage_summary` — it only needs Ollama. No audio stack required.
 
 ### Summarize an audio file
 
 ```bash
-solus run episode.mp3
-# Equivalent to:
 solus run --workflow audio_summary episode.mp3
 ```
+
+This requires yt-dlp, ffmpeg, and whisper.cpp. Run `solus doctor --workflow audio_summary` to check.
 
 ### Summarize a YouTube video in bullet-note format
 
 ```bash
-solus run "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mode notes --format markdown
+solus run --workflow audio_summary "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mode notes --format markdown
 ```
 
 ### Queue a batch of files and process them in the background
@@ -173,7 +177,7 @@ dir = "~/.config/solus/modules.d"
 dir = "~/.config/solus/triggers.d"
 
 [ui]
-default_workflow = "audio_summary"
+default_workflow = "webpage_summary"
 
 [security]
 mode = "trusted"              # "trusted" or "untrusted"
@@ -206,7 +210,7 @@ mode = "trusted"              # "trusted" or "untrusted"
 solus [subcommand] [options]
 ```
 
-If no subcommand is given, `solus <source>` is shorthand for `solus run --workflow <ui.default_workflow> <source>` (`audio_summary` by default).
+If no subcommand is given, `solus <source>` is shorthand for `solus run --workflow <ui.default_workflow> <source>` (`webpage_summary` by default).
 
 ### `solus run`
 
@@ -218,7 +222,7 @@ solus run [--workflow NAME] [OPTIONS] SOURCE
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `--workflow NAME` | `ui.default_workflow` (`audio_summary`) | Workflow to execute |
+| `--workflow NAME` | `ui.default_workflow` (`webpage_summary`) | Workflow to execute |
 | `--mode MODE` | `full` | Summary mode: `full`, `tldr`, `outline`, `notes`, `transcript` |
 | `--format FORMAT` | `markdown` | Output format: `markdown`, `json`, `text` |
 | `--output PATH` | stdout | Write output to file |
@@ -340,6 +344,16 @@ solus serve [--host HOST] [--port PORT]
 
 Defaults to `http://localhost:8765`.
 
+### `solus init`
+
+Guided first-run setup. Creates config, scaffolds a starter workflow, checks Ollama, and prints next steps.
+
+```bash
+solus init
+```
+
+This is idempotent — running it again won't overwrite existing files.
+
 ### `solus config`
 
 View and edit the configuration file.
@@ -353,10 +367,21 @@ You can also edit the config in the web UI at `/config`. Config changes require 
 
 ### `solus doctor`
 
-Verify the environment. Reports which external tools are found or missing.
+Verify the environment. By default, only checks dependencies required by your configured workflows.
 
 ```bash
-solus doctor
+solus doctor                              # scoped to your workflows
+solus doctor --all                        # check all dependencies
+solus doctor --fix                        # show copy-pasteable fix commands
+solus doctor --workflow audio_summary     # check one workflow's deps
+```
+
+### `solus examples`
+
+Print example workflow YAML templates. Shorthand for `solus workflows examples`.
+
+```bash
+solus examples
 ```
 
 ### `solus cleanup`
@@ -2004,7 +2029,7 @@ curl -s http://localhost:8765/healthz
 
 ### `solus doctor` failures
 
-Run `solus doctor` to identify missing dependencies. Common fixes:
+Run `solus doctor --fix` to identify missing dependencies with copy-pasteable commands. Common fixes:
 
 | Problem | Fix |
 |---------|-----|

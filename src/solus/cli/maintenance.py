@@ -20,7 +20,9 @@ def cmd_doctor(args: argparse.Namespace | None = None) -> int:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
     workflow_name = str(getattr(args, "workflow", "") or "").strip() or None
-    return run_doctor(config, workflow_name=workflow_name)
+    fix = bool(getattr(args, "fix", False))
+    check_all = bool(getattr(args, "check_all", False))
+    return run_doctor(config, workflow_name=workflow_name, fix=fix, check_all=check_all)
 
 
 def cmd_config_edit() -> int:

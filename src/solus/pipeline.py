@@ -95,6 +95,7 @@ def process_source(
     verbose: bool,
     progress: ProgressCallback | None = None,
     model: str | None = None,
+    on_step_complete: "Callable | None" = None,
 ) -> ProcessingResult:
     ctx = execute_source_workflow(
         config,
@@ -109,6 +110,7 @@ def process_source(
         no_cache=no_cache,
         verbose=verbose,
         progress=progress,
+        on_step_complete=on_step_complete,
     )
 
     input_audio = Path(str(ctx.data.get("audio_input_path")))

@@ -68,6 +68,36 @@ def _audio_failure_hint(error: Exception, workflow_name: str) -> str | None:
     )
 
 
+def _generic_failure_hint(error: Exception) -> str | None:
+    message = str(error).lower()
+    if "connection refused" in message or "ollama" in message:
+        return "Hint: Is Ollama running?  Start it with: ollama serve"
+    if "config" in message and ("not found" in message or "missing" in message):
+        return "Hint: Run `solus init` to set up config and workflows."
+    return None
+
+
+def _step_progress_callback() -> Callable:
+    """Return an on_step_complete callback matching engine signature (ctx, step_name, step_num, total)."""
+
+    def _on_step(ctx: Context, step_name: str, step_num: int, total_steps: int) -> None:
+        timings = ctx.data.get("step_timings", [])
+        step_type = ""
+        elapsed_s = 0.0
+        if timings and len(timings) >= step_num:
+            entry = timings[step_num - 1]
+            step_type = entry.get("type", "")
+            elapsed_s = entry.get("duration_ms", 0) / 1000.0
+        label = f"({step_type}) " if step_type else ""
+        print(
+            f"[{step_num}/{total_steps}] {step_name} {label}done ({elapsed_s:.1f}s)",
+            file=sys.stderr,
+            flush=True,
+        )
+
+    return _on_step
+
+
 def _print_dry_run(
     workflow: Workflow,
     result: ValidationResult,
@@ -81,6 +111,7 @@ def _print_dry_run(
         print(f"  {workflow.description}")
     print()
     print("Steps:")
+    total = len(workflow.steps)
     for i, step in enumerate(workflow.steps, 1):
         spec = active_registry.get_spec(step.type)
         step_label = f"  {i}. {step.name}  [{step.type}]"
@@ -89,10 +120,14 @@ def _print_dry_run(
             read_keys = [ck.key for ck in spec.reads]
             write_keys = [ck.key for ck in spec.writes]
             if read_keys:
-                print(f"     Reads: {', '.join(read_keys)}")
+                print(f"     reads:  {', '.join(read_keys)}")
             if write_keys:
-                print(f"     Writes: {', '.join(write_keys)}")
-        print()
+                print(f"     writes: {', '.join(write_keys)}")
+        if i < total:
+            print("       |")
+            print("       v")
+
+    print()
 
     for issue in result.issues:
         tag = "ERROR" if issue.level == "error" else "WARNING"
@@ -144,6 +179,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     params = _build_run_params(args)
     workflow_name = str(args.workflow or default_workflow_name(config))
 
+    on_step = None if args.quiet_progress else _step_progress_callback()
+
     try:
         if workflow_name == "audio_summary":
             processing_result = process_source(
@@ -156,6 +193,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 verbose=args.verbose,
                 progress=progress,
                 model=args.model,
+                on_step_complete=on_step,
             )
             output_text = processing_result.output_text
         else:
@@ -167,11 +205,12 @@ def cmd_run(args: argparse.Namespace) -> int:
                 no_cache=args.no_cache,
                 verbose=args.verbose,
                 progress=progress,
+                on_step_complete=on_step,
             )
             output_text = _context_output_text(ctx)
     except Exception as exc:  # noqa: BLE001
         print(f"Error: {exc}", file=sys.stderr)
-        hint = _audio_failure_hint(exc, workflow_name)
+        hint = _audio_failure_hint(exc, workflow_name) or _generic_failure_hint(exc)
         if hint:
             print(hint, file=sys.stderr)
         return 1

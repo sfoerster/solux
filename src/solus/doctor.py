@@ -7,7 +7,8 @@ from pathlib import Path
 
 import requests
 
-from .config import Config, effective_external_modules_dir
+from .cli.fmt import bold, green, red
+from .config import Config, default_workflow_name, effective_external_modules_dir
 from .modules.spec import ModuleSpec
 from .paths import ensure_dir
 from .workflows.loader import WorkflowLoadError, list_workflows, load_workflow
@@ -15,10 +16,19 @@ from .workflows.models import Workflow
 from .workflows.registry import StepRegistry, build_registry
 
 
-def _print(status: str, message: str, hint: str | None = None) -> None:
-    print(f"[{status}] {message}")
+def _print(status: str, message: str, hint: str | None = None, *, fix: bool = False) -> None:
+    if status == "OK":
+        tag = green("[OK]")
+    elif status == "WARN":
+        tag = red("[!!]")
+    else:
+        tag = f"[{status}]"
+    print(f"{tag} {message}")
     if hint:
-        print(f"      -> {hint}")
+        if fix:
+            print(f"      {bold('Fix:')} {hint}")
+        else:
+            print(f"      -> {hint}")
 
 
 def _find_binary(binary: str) -> str | None:
@@ -95,7 +105,7 @@ def _ollama_install_hint() -> str:
     return "Install Ollama from https://ollama.ai and verify [ollama].base_url in config.toml"
 
 
-def _check_yt_dlp(config: Config) -> bool:
+def _check_yt_dlp(config: Config, *, fix: bool = False) -> bool:
     yt_dlp_path = _find_binary(config.yt_dlp.binary)
     if yt_dlp_path:
         runnable, message = _check_binary_runs(yt_dlp_path, "--version")
@@ -109,18 +119,19 @@ def _check_yt_dlp(config: Config) -> bool:
                 "Set [yt_dlp].binary to ~/.pyenv/versions/<env>/bin/yt-dlp "
                 "or activate the matching pyenv version."
             )
-        _print("WARN", f"yt-dlp is present but not runnable: {message}", hint)
+        _print("WARN", f"yt-dlp is present but not runnable: {message}", hint, fix=fix)
         return True
 
     _print(
         "WARN",
         f"yt-dlp binary not found: {config.yt_dlp.binary}",
         _ytdlp_install_hint(),
+        fix=fix,
     )
     return True
 
 
-def _check_ffmpeg(config: Config) -> bool:
+def _check_ffmpeg(config: Config, *, fix: bool = False) -> bool:
     ffmpeg_path = _find_binary(config.ffmpeg.binary)
     if ffmpeg_path:
         runnable, message = _check_binary_runs(ffmpeg_path, "-version")
@@ -131,6 +142,7 @@ def _check_ffmpeg(config: Config) -> bool:
             "WARN",
             f"ffmpeg is present but not runnable: {message}",
             "Set [ffmpeg].binary to a valid executable path.",
+            fix=fix,
         )
         return True
 
@@ -138,11 +150,12 @@ def _check_ffmpeg(config: Config) -> bool:
         "WARN",
         f"ffmpeg binary not found: {config.ffmpeg.binary}",
         _ffmpeg_install_hint(),
+        fix=fix,
     )
     return True
 
 
-def _check_whisper(config: Config) -> bool:
+def _check_whisper(config: Config, *, fix: bool = False) -> bool:
     missing_required = False
     if config.whisper.cli_path and config.whisper.cli_path.exists():
         _print("OK", f"whisper-cli found at {config.whisper.cli_path}")
@@ -153,6 +166,7 @@ def _check_whisper(config: Config) -> bool:
             "WARN",
             f"whisper-cli not found at {missing}",
             _whisper_install_hint(),
+            fix=fix,
         )
 
     if config.whisper.model_path and config.whisper.model_path.exists():
@@ -164,11 +178,12 @@ def _check_whisper(config: Config) -> bool:
             "WARN",
             f"whisper model file not found at {missing}",
             "Download a GGML model and set 'whisper.model_path' in config.toml",
+            fix=fix,
         )
     return missing_required
 
 
-def _check_ollama(config: Config) -> bool:
+def _check_ollama(config: Config, *, fix: bool = False) -> bool:
     tags_url = f"{config.ollama.base_url}/api/tags"
     try:
         response = requests.get(tags_url, timeout=5)
@@ -183,6 +198,7 @@ def _check_ollama(config: Config) -> bool:
             "WARN",
             f"Ollama model '{config.ollama.model}' not found",
             f"Run: ollama pull {config.ollama.model}",
+            fix=fix,
         )
         return True
     except requests.RequestException as exc:
@@ -190,6 +206,7 @@ def _check_ollama(config: Config) -> bool:
             "WARN",
             f"Ollama not reachable at {config.ollama.base_url}: {exc}",
             _ollama_install_hint(),
+            fix=fix,
         )
         return True
     except ValueError:
@@ -197,6 +214,7 @@ def _check_ollama(config: Config) -> bool:
             "WARN",
             f"Ollama returned unexpected response from {tags_url}",
             "Check if Ollama is healthy and responds with JSON.",
+            fix=fix,
         )
         return True
 
@@ -251,7 +269,63 @@ def _collect_workflow_specs(
     return collected, issues
 
 
-def run_doctor(config: Config, workflow_name: str | None = None) -> int:
+def _collect_scoped_deps(
+    config: Config,
+    workflows_dir: Path,
+    external_dir: Path | None,
+) -> tuple[set[str], list[ModuleSpec]]:
+    """Collect dependency names and module specs for user YAML workflows + the default workflow.
+
+    Unlike ``--all``, this intentionally excludes builtin workflows that the user
+    has not explicitly configured so that ``solus doctor`` only checks what is
+    actually needed.
+
+    Returns ``(dep_names, specs)`` so the caller can pass specs to
+    ``_check_module_dependencies`` for scoped binary-dep checks.
+    """
+    from .workflows.loader import _workflow_files, _load_yaml_file
+
+    default_wf = default_workflow_name(config)
+    registry = build_registry(external_dir=external_dir)
+    dep_names: set[str] = set()
+    all_specs: dict[str, ModuleSpec] = {}
+
+    # Collect deps from user YAML workflows
+    seen_names: set[str] = set()
+    for path in _workflow_files(workflows_dir):
+        try:
+            wf = _load_yaml_file(path, strict_secrets=False, interpolate_secrets=False, warn_missing_secrets=False)
+        except WorkflowLoadError:
+            continue
+        seen_names.add(wf.name)
+        specs, _ = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+        all_specs.update(specs)
+        for spec in specs.values():
+            for dep in spec.dependencies:
+                dep_names.add(dep.name)
+
+    # Also include the default workflow
+    if default_wf not in seen_names:
+        try:
+            wf = load_workflow(default_wf, workflow_dir=workflows_dir, strict_secrets=False, warn_missing_secrets=False)
+            specs, _ = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+            all_specs.update(specs)
+            for spec in specs.values():
+                for dep in spec.dependencies:
+                    dep_names.add(dep.name)
+        except WorkflowLoadError:
+            pass
+
+    return dep_names, list(all_specs.values())
+
+
+def run_doctor(
+    config: Config,
+    workflow_name: str | None = None,
+    *,
+    fix: bool = False,
+    check_all: bool = False,
+) -> int:
     missing_required = False
 
     if config.config_exists:
@@ -260,7 +334,8 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
         _print(
             "WARN",
             f"Config file not found at {config.config_path}; using defaults where possible",
-            "Create config.toml to set whisper paths and preferred model.",
+            "Run: solus init" if fix else "Create config.toml to set whisper paths and preferred model.",
+            fix=fix,
         )
 
     cache_dir = ensure_dir(config.paths.cache_dir)
@@ -276,9 +351,9 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
     _print("OK", f"Discovered workflows: {len(workflows)}")
     if invalid:
         missing_required = True
-        _print("WARN", f"Invalid workflow definitions: {len(invalid)}")
+        _print("WARN", f"Invalid workflow definitions: {len(invalid)}", fix=fix)
         for item in invalid[:5]:
-            _print("WARN", item)
+            _print("WARN", item, fix=fix)
 
     external_dir = effective_external_modules_dir(config)
     if external_dir is None:
@@ -286,15 +361,40 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
 
     target_workflow = workflow_name.strip() if workflow_name else ""
     if not target_workflow:
-        missing_required |= _check_yt_dlp(config)
-        missing_required |= _check_ffmpeg(config)
-        missing_required |= _check_whisper(config)
-        missing_required |= _check_ollama(config)
+        if check_all:
+            # Old behavior: check everything
+            missing_required |= _check_yt_dlp(config, fix=fix)
+            missing_required |= _check_ffmpeg(config, fix=fix)
+            missing_required |= _check_whisper(config, fix=fix)
+            missing_required |= _check_ollama(config, fix=fix)
+
+            missing_required_ref = [missing_required]
+            _check_module_dependencies(
+                missing_required_ref=missing_required_ref,
+                external_dir=external_dir,
+                fix=fix,
+            )
+            return 1 if missing_required_ref[0] else 0
+
+        # Scoped by default: only check deps required by user workflows + default
+        scoped_deps, scoped_specs = _collect_scoped_deps(config, workflows_dir, external_dir)
+
+        if "yt-dlp" in scoped_deps:
+            missing_required |= _check_yt_dlp(config, fix=fix)
+        if "ffmpeg" in scoped_deps:
+            missing_required |= _check_ffmpeg(config, fix=fix)
+        if "whisper-cli" in scoped_deps:
+            missing_required |= _check_whisper(config, fix=fix)
+        if "ollama" in scoped_deps:
+            missing_required |= _check_ollama(config, fix=fix)
 
         missing_required_ref = [missing_required]
         _check_module_dependencies(
             missing_required_ref=missing_required_ref,
             external_dir=external_dir,
+            specs=scoped_specs,
+            skip_binary_deps={"yt-dlp", "ffmpeg", "whisper-cli"},
+            fix=fix,
         )
         return 1 if missing_required_ref[0] else 0
 
@@ -307,7 +407,7 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
             warn_missing_secrets=False,
         )
     except WorkflowLoadError as exc:
-        _print("WARN", str(exc))
+        _print("WARN", str(exc), fix=fix)
         return 1
 
     registry = build_registry(external_dir=external_dir)
@@ -320,7 +420,7 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
     if workflow_issues:
         missing_required = True
         for item in workflow_issues[:10]:
-            _print("WARN", item)
+            _print("WARN", item, fix=fix)
 
     dep_names: set[str] = set()
     for spec in workflow_specs.values():
@@ -328,13 +428,13 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
             dep_names.add(dep.name)
 
     if "yt-dlp" in dep_names:
-        missing_required |= _check_yt_dlp(config)
+        missing_required |= _check_yt_dlp(config, fix=fix)
     if "ffmpeg" in dep_names:
-        missing_required |= _check_ffmpeg(config)
+        missing_required |= _check_ffmpeg(config, fix=fix)
     if "whisper-cli" in dep_names:
-        missing_required |= _check_whisper(config)
+        missing_required |= _check_whisper(config, fix=fix)
     if "ollama" in dep_names:
-        missing_required |= _check_ollama(config)
+        missing_required |= _check_ollama(config, fix=fix)
 
     missing_required_ref = [missing_required]
     _check_module_dependencies(
@@ -342,6 +442,7 @@ def run_doctor(config: Config, workflow_name: str | None = None) -> int:
         external_dir=external_dir,
         specs=list(workflow_specs.values()),
         skip_binary_deps={"yt-dlp", "ffmpeg", "whisper-cli"},
+        fix=fix,
     )
     return 1 if missing_required_ref[0] else 0
 
@@ -351,6 +452,8 @@ def _check_module_dependencies(
     external_dir: Path | None = None,
     specs: list[ModuleSpec] | None = None,
     skip_binary_deps: set[str] | None = None,
+    *,
+    fix: bool = False,
 ) -> None:
     from .modules.discovery import discover_modules
 
@@ -373,7 +476,7 @@ def _check_module_dependencies(
                     _print("OK", f"Module {spec.name}: {dep.name} available")
                 else:
                     missing_required_ref[0] = True
-                    _print("WARN", f"Module {spec.name}: {dep.name} found but not runnable", dep.hint or None)
+                    _print("WARN", f"Module {spec.name}: {dep.name} found but not runnable", dep.hint or None, fix=fix)
             else:
                 missing_required_ref[0] = True
-                _print("WARN", f"Module {spec.name}: {dep.name} not found", dep.hint or None)
+                _print("WARN", f"Module {spec.name}: {dep.name} not found", dep.hint or None, fix=fix)

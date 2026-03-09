@@ -15,6 +15,7 @@ from .workflows import (
 )
 from .modules import cmd_modules_list, cmd_modules_inspect
 from .queue import cmd_ingest, cmd_log
+from .init import cmd_init
 from .maintenance import cmd_doctor, cmd_config, cmd_config_edit, cmd_cleanup, cmd_retry, cmd_repair
 from .server import cmd_serve
 from .worker_cmd import cmd_worker
@@ -41,6 +42,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "workflows",
         "modules",
         "ingest",
+        "init",
         "doctor",
         "config",
         "cleanup",
@@ -50,6 +52,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "repair",
         "worker",
         "triggers",
+        "examples",
         "-h",
         "--help",
     }
@@ -76,6 +79,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
 
     args = parse_args(raw_argv)
+    if args.command == "init":
+        return cmd_init(args)
+    if args.command == "examples":
+        return cmd_workflows_examples()
     if args.command == "doctor":
         return cmd_doctor(args)
     if args.command == "config":

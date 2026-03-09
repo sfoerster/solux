@@ -139,6 +139,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override Ollama model for queued jobs (default: from config)",
     )
 
+    subparsers.add_parser(
+        "init",
+        help="Guided first-run setup: create config, scaffold a workflow, check Ollama",
+    )
+
+    subparsers.add_parser(
+        "examples",
+        help="Print example workflow YAML templates (shorthand for 'workflows examples')",
+    )
+
     doctor_parser = subparsers.add_parser(
         "doctor",
         help="Check local dependencies and configuration",
@@ -147,6 +157,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--workflow",
         default=None,
         help="Limit checks to dependencies required by one workflow",
+    )
+    doctor_parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Show prominent fix commands for each issue",
+    )
+    doctor_parser.add_argument(
+        "--all",
+        action="store_true",
+        dest="check_all",
+        help="Check all dependencies (default: only those needed by your workflows)",
     )
     config_parser = subparsers.add_parser(
         "config",

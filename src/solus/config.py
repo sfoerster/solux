@@ -22,7 +22,7 @@ DEFAULT_OIDC_ALLOWED_ALGS: tuple[str, ...] = (
     "ES384",
     "ES512",
 )
-DEFAULT_UI_WORKFLOW = "audio_summary"
+DEFAULT_UI_WORKFLOW = "webpage_summary"
 _WORKFLOW_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
