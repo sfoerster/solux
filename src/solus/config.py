@@ -40,6 +40,10 @@ class WhisperConfig:
     cli_path: Path | None
     model_path: Path | None
     threads: int
+    language: str | None = None
+    temperature: float = 0.2
+    entropy_thold: float = 2.8
+    logprob_thold: float = -1.0
 
 
 @dataclass(frozen=True)
@@ -299,6 +303,10 @@ def build_bootstrap_config_toml() -> str:
         f'cli_path = "{_toml_escape(_shrink_home(whisper_cli))}"',
         f'model_path = "{_toml_escape(_shrink_home(whisper_model))}"',
         f"threads = {threads_default}",
+        "# language = \"en\"                      # Force language (default: auto-detect)",
+        "# temperature = 0.2                    # Sampling temperature (lower = less repetition)",
+        "# entropy_thold = 2.8                  # Entropy threshold for repetition detection",
+        "# logprob_thold = -1.0                 # Log-probability threshold for segment filtering",
         "",
         "[ollama]",
         f'base_url = "{_toml_escape(default_ollama_base_url)}"',
@@ -468,6 +476,10 @@ def load_config(config_path: str | Path | None = None) -> Config:
             cli_path=_expand_path(whisper_data.get("cli_path")),
             model_path=_expand_path(whisper_data.get("model_path")),
             threads=threads_int,
+            language=_opt_str(whisper_data, "language"),
+            temperature=float(whisper_data.get("temperature", 0.2)),
+            entropy_thold=float(whisper_data.get("entropy_thold", 2.8)),
+            logprob_thold=float(whisper_data.get("logprob_thold", -1.0)),
         ),
         ollama=OllamaConfig(
             base_url=str(ollama_data.get("base_url", _default_ollama_base_url())).rstrip("/"),

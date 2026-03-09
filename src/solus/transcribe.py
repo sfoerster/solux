@@ -50,7 +50,15 @@ def transcribe_audio(
         str(output_base),
         "-t",
         str(config.whisper.threads),
+        "--temperature",
+        str(config.whisper.temperature),
+        "--entropy-thold",
+        str(config.whisper.entropy_thold),
+        "--logprob-thold",
+        str(config.whisper.logprob_thold),
     ]
+    if config.whisper.language:
+        cmd.extend(["--language", config.whisper.language])
 
     if progress:
         progress(f"Transcribing WAV with whisper-cli: {wav_path}")

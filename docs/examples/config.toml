@@ -8,6 +8,10 @@ cache_dir = "~/.local/share/solus"
 # threads = 4                          # Default: CPU core count
 # cli_path  = "~/whisper.cpp/build/bin/whisper-cli"
 # model_path = "~/whisper.cpp/models/ggml-medium.en.bin"
+# language = "en"                      # Force language (default: auto-detect)
+# temperature = 0.2                    # Sampling temperature (lower = less repetition)
+# entropy_thold = 2.8                  # Entropy threshold for repetition detection
+# logprob_thold = -1.0                 # Log-probability threshold for segment filtering
 
 [ollama]
 base_url = "http://localhost:11434"
