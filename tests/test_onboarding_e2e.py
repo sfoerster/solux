@@ -187,7 +187,7 @@ def test_doctor_fix_flag(clean_env, monkeypatch, capsys):
     reason="Set SOLUS_E2E=1 to run real end-to-end test with Ollama",
 )
 def test_real_onboarding_under_60s(clean_env, monkeypatch, capsys):
-    """Real end-to-end: init + doctor + dry-run with actual Ollama, under 60s."""
+    """Real end-to-end: init + doctor + real workflow run with actual Ollama, under 60s."""
     import time
 
     start = time.monotonic()
@@ -198,7 +198,7 @@ def test_real_onboarding_under_60s(clean_env, monkeypatch, capsys):
     ret = main(["doctor", "--workflow", "webpage_summary"])
     # Don't assert == 0 since Ollama model might not be pulled
 
-    ret = main(["run", "--dry-run", "--workflow", "webpage_summary", "https://example.com"])
+    ret = main(["run", "--workflow", "webpage_summary", "https://example.com"])
     assert ret == 0
 
     elapsed = time.monotonic() - start

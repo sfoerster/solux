@@ -120,7 +120,7 @@ def test_run_doctor_fix_flag_shows_fix_prefix(monkeypatch, tmp_path: Path, capsy
 
     monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
     monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
-    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: (set(), []))
+    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: (set(), [], []))
     monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     run_doctor(cfg, fix=True)
@@ -161,7 +161,7 @@ def test_run_doctor_scoped_default_skips_unneeded_deps(monkeypatch, tmp_path: Pa
     monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
     monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
     # Only ollama in scoped deps (webpage_summary uses ollama)
-    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: ({"ollama"}, []))
+    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: ({"ollama"}, [], []))
 
     def _track(name):
         def _inner(_config, **_kwargs):
@@ -178,3 +178,18 @@ def test_run_doctor_scoped_default_skips_unneeded_deps(monkeypatch, tmp_path: Pa
 
     run_doctor(cfg)
     assert checked == ["ollama"]
+
+
+def test_run_doctor_scoped_default_fails_on_unknown_module_types(monkeypatch, tmp_path: Path) -> None:
+    """Scoped mode should fail if configured workflows contain unknown step types."""
+    cfg = _config(tmp_path)
+
+    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr(
+        "solus.doctor._collect_scoped_deps",
+        lambda *_a, **_kw: (set(), [], ["Workflow 'broken' step 'x' uses unknown module type 'totally.unknown'"]),
+    )
+    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+
+    assert run_doctor(cfg) == 1

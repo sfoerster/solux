@@ -7,7 +7,7 @@ from pathlib import Path
 
 import requests
 
-from .cli.fmt import bold, green, red
+from .fmt import bold, green, red
 from .config import Config, default_workflow_name, effective_external_modules_dir
 from .modules.spec import ModuleSpec
 from .paths import ensure_dir
@@ -273,15 +273,16 @@ def _collect_scoped_deps(
     config: Config,
     workflows_dir: Path,
     external_dir: Path | None,
-) -> tuple[set[str], list[ModuleSpec]]:
+) -> tuple[set[str], list[ModuleSpec], list[str]]:
     """Collect dependency names and module specs for user YAML workflows + the default workflow.
 
     Unlike ``--all``, this intentionally excludes builtin workflows that the user
     has not explicitly configured so that ``solus doctor`` only checks what is
     actually needed.
 
-    Returns ``(dep_names, specs)`` so the caller can pass specs to
-    ``_check_module_dependencies`` for scoped binary-dep checks.
+    Returns ``(dep_names, specs, issues)`` so the caller can pass specs to
+    ``_check_module_dependencies`` for scoped binary-dep checks and fail if
+    workflows reference unknown step types.
     """
     from .workflows.loader import _workflow_files, _load_yaml_file
 
@@ -289,6 +290,7 @@ def _collect_scoped_deps(
     registry = build_registry(external_dir=external_dir)
     dep_names: set[str] = set()
     all_specs: dict[str, ModuleSpec] = {}
+    issues: list[str] = []
 
     # Collect deps from user YAML workflows
     seen_names: set[str] = set()
@@ -298,7 +300,8 @@ def _collect_scoped_deps(
         except WorkflowLoadError:
             continue
         seen_names.add(wf.name)
-        specs, _ = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+        specs, wf_issues = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+        issues.extend(wf_issues)
         all_specs.update(specs)
         for spec in specs.values():
             for dep in spec.dependencies:
@@ -308,7 +311,8 @@ def _collect_scoped_deps(
     if default_wf not in seen_names:
         try:
             wf = load_workflow(default_wf, workflow_dir=workflows_dir, strict_secrets=False, warn_missing_secrets=False)
-            specs, _ = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+            specs, wf_issues = _collect_workflow_specs(wf, workflow_dir=workflows_dir, registry=registry)
+            issues.extend(wf_issues)
             all_specs.update(specs)
             for spec in specs.values():
                 for dep in spec.dependencies:
@@ -316,7 +320,7 @@ def _collect_scoped_deps(
         except WorkflowLoadError:
             pass
 
-    return dep_names, list(all_specs.values())
+    return dep_names, list(all_specs.values()), issues
 
 
 def run_doctor(
@@ -377,7 +381,11 @@ def run_doctor(
             return 1 if missing_required_ref[0] else 0
 
         # Scoped by default: only check deps required by user workflows + default
-        scoped_deps, scoped_specs = _collect_scoped_deps(config, workflows_dir, external_dir)
+        scoped_deps, scoped_specs, scoped_issues = _collect_scoped_deps(config, workflows_dir, external_dir)
+        if scoped_issues:
+            missing_required = True
+            for item in scoped_issues[:10]:
+                _print("WARN", item, fix=fix)
 
         if "yt-dlp" in scoped_deps:
             missing_required |= _check_yt_dlp(config, fix=fix)

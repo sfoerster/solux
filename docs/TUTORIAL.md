@@ -237,10 +237,10 @@ solus run [--workflow NAME] [OPTIONS] SOURCE
 
 ```bash
 # Summarize a podcast episode
-solus run "https://example.com/episode.mp3"
+solus run --workflow audio_summary "https://example.com/episode.mp3"
 
 # Generate bullet notes from a YouTube video
-solus run "https://youtube.com/watch?v=..." --mode notes --output notes.md
+solus run --workflow audio_summary "https://youtube.com/watch?v=..." --mode notes --output notes.md
 
 # Fetch and summarize a webpage, output JSON
 solus run --workflow webpage_summary "https://news.ycombinator.com" --format json
