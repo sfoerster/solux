@@ -97,12 +97,12 @@ What already exists and works:
 - [ ] Set up GitHub Actions CI (lint, type check, test matrix on 3.11 + 3.12+)
 - [ ] Add issue templates (bug report, feature request) and PR template
 - [ ] Branch protection on `main` (require CI pass, require review)
-- [ ] `CODEOWNERS` for the public repo
+- [x] `CODEOWNERS` for the public repo
 - [ ] Dependabot or Renovate for dependency updates
 
 ### 2.5 Distribution & Launch
 
-- [ ] Push to GitHub (public repo)
+- [x] Push to GitHub (public repo)
 - [ ] Write deep-dive posts showing real workflows
 - [ ] Set up GitHub Discussions for community support
 
