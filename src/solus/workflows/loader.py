@@ -9,7 +9,7 @@ from solus.config import get_default_workflows_dir
 from solus.modules._helpers import interpolate_env
 
 from .builtins.audio_summary import BUILTIN_WORKFLOWS
-from .models import Step, Workflow
+from .models import Step, Workflow, WorkflowParam
 
 
 def _interpolate_secrets(val: Any, strict: bool = False, warn_missing: bool = True) -> Any:
@@ -78,6 +78,32 @@ def _parse_step(
     )
 
 
+def _parse_params(raw: Any, source: str) -> list[WorkflowParam]:
+    """Parse the optional ``params:`` list from a workflow YAML document."""
+    if not raw:
+        return []
+    if not isinstance(raw, list):
+        raise WorkflowLoadError(f"'params' in {source} must be a list")
+    params: list[WorkflowParam] = []
+    for idx, item in enumerate(raw):
+        if not isinstance(item, dict):
+            raise WorkflowLoadError(f"params[{idx}] in {source} must be a mapping")
+        name = item.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise WorkflowLoadError(f"params[{idx}].name in {source} must be a non-empty string")
+        param_type = str(item.get("type", "str"))
+        if param_type not in ("str", "int", "bool"):
+            raise WorkflowLoadError(f"params[{idx}].type in {source} must be str, int, or bool")
+        params.append(WorkflowParam(
+            name=name.strip(),
+            type=param_type,
+            default=item.get("default"),
+            description=str(item.get("description", "")),
+            required=bool(item.get("required", False)),
+        ))
+    return params
+
+
 def _parse_workflow(
     raw: Any,
     *,
@@ -107,7 +133,8 @@ def _parse_workflow(
         )
         for idx, item in enumerate(steps_raw)
     ]
-    return Workflow(name=name.strip(), description=description.strip(), steps=steps)
+    params = _parse_params(raw.get("params", []), source)
+    return Workflow(name=name.strip(), description=description.strip(), steps=steps, params=params)
 
 
 def _workflow_files(workflow_dir: Path) -> list[Path]:
@@ -209,8 +236,20 @@ def workflow_to_dict(workflow: Workflow) -> dict[str, Any]:
         if step.on_error is not None:
             d["on_error"] = step.on_error
         steps.append(d)
-    return {
+    result: dict[str, Any] = {
         "name": workflow.name,
         "description": workflow.description,
         "steps": steps,
     }
+    if workflow.params:
+        result["params"] = [
+            {k: v for k, v in {
+                "name": p.name,
+                "type": p.type,
+                "default": p.default,
+                "description": p.description,
+                "required": p.required,
+            }.items() if v or k == "name"}
+            for p in workflow.params
+        ]
+    return result

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- Custom workflow parameters (`params:`) — workflows can declare typed parameters (str, int, bool) in their YAML. When exposed via `solus mcp`, each workflow registers with its own parameter signature instead of the default 4-param (source, mode, format, model) signature. Backward compatible — workflows without `params:` keep the existing signature.
+
 ## [0.5.0] — 2026-03-08 (Phase 1: 60-Second Onboarding)
 
 ### Added

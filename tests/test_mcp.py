@@ -40,7 +40,7 @@ def mock_config(tmp_path: Path):
 @pytest.fixture
 def sample_workflows():
     """Return a list of sample workflow objects for testing."""
-    from solus.workflows.models import Step, Workflow
+    from solus.workflows.models import Step, Workflow, WorkflowParam
 
     return [
         Workflow(
@@ -58,6 +58,15 @@ def sample_workflows():
                 Step(name="fetch", type="input.source_fetch", config={}),
                 Step(name="transcribe", type="ai.whisper_transcribe", config={}),
                 Step(name="summarize", type="ai.llm_summarize", config={}),
+            ],
+        ),
+        Workflow(
+            name="custom_search",
+            description="Search with custom params.",
+            steps=[Step(name="search", type="input.source_fetch", config={})],
+            params=[
+                WorkflowParam(name="query", type="str", required=True, description="Search query"),
+                WorkflowParam(name="count", type="int", default=5, description="Result count"),
             ],
         ),
     ]
@@ -169,6 +178,35 @@ class TestHelperFunctions:
 
         ctx = _build_context("test.txt", mock_config)
         assert ctx.params == {}
+
+    def test_build_context_with_custom_params(self, mock_config):
+        from solus.mcp.server import _build_context
+
+        ctx = _build_context("https://example.com", mock_config, {"query": "test", "count": 5})
+        assert ctx.params["query"] == "test"
+        assert ctx.params["count"] == 5
+
+
+@_requires_mcp
+class TestCustomToolRegistration:
+    """Test registration of workflows with custom params."""
+
+    @patch("solus.mcp.server.load_config")
+    @patch("solus.mcp.server.list_workflows")
+    def test_server_registers_custom_param_workflow(self, mock_list_wf, mock_load_cfg, mock_config, sample_workflows):
+        mock_load_cfg.return_value = mock_config
+        mock_list_wf.return_value = (sample_workflows, [])
+
+        from solus.mcp.server import create_mcp_server
+
+        server = create_mcp_server()
+        assert server is not None
+
+    def test_run_workflow_common_returns_error_for_missing_workflow(self, mock_config):
+        from solus.mcp.server import _run_workflow_common
+
+        result = _run_workflow_common("nonexistent_workflow", mock_config, {})
+        assert "error" in json.loads(result)
 
 
 class TestMCPCLI:

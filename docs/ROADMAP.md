@@ -110,6 +110,7 @@ What already exists and works:
 
 - [x] **MCP server mode** — expose Solus workflows as MCP tools so AI agents (Claude Code, Cursor, Windsurf, etc.) can discover and invoke workflows directly
 - [x] Ship as a built-in: `solus mcp` starts the MCP server over stdio
+- [x] Custom workflow parameters (`params:`) — workflows declare typed parameters in YAML; MCP tools register with matching signatures
 - [ ] Publish to MCP registries / awesome-mcp lists alongside the GitHub launch
 
 ---
@@ -178,7 +179,8 @@ AI agent  →  Solus MCP server  →  JSON file export (any service)
 #### MCP Workflow-as-Tool Pattern
 
 - [ ] **Pattern documentation** — Document and provide examples for wrapping a Solus workflow as a set of MCP tools with typed parameters. The workflow defines what data to read and how to query it; `solus mcp` exposes it.
-- [ ] **Example external modules and workflows** — Ship as `examples/`, not core built-ins. Demonstrate the pattern of reading structured JSON from an external service, querying/filtering the data, and exposing the results as MCP tools. Examples should cover: loading a JSON export, querying a REST API with auth, filtering/ranking results, and cron-triggered scheduled workflows.
+- [x] **Example external modules and workflows** — Shipped in the separate `solus-examples` repo (not core built-ins). First example: `linkedin-engagement/` — reads a JSON export, filters/ranks authors, and exposes 6 MCP tools. Demonstrates the full pattern of external module + custom-param workflows.
+- [ ] Additional examples: REST API with auth, cron-triggered scheduled workflows.
 
 ### 3.6 Usage Telemetry (opt-in)
 

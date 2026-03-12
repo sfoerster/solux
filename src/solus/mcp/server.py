@@ -3,6 +3,10 @@
 Each workflow is registered as an MCP tool. AI agents discover workflows via
 ``tools/list`` and invoke them via ``tools/call``.
 
+Workflows that declare custom ``params:`` in their YAML are registered with
+those parameter signatures. Workflows without custom params get the default
+signature (source, mode, format, model) for backward compatibility.
+
 Transport: stdio (standard for CLI-integrated MCP servers).
 """
 
@@ -18,9 +22,17 @@ from mcp.server.fastmcp import FastMCP
 from solus.config import load_config
 from solus.workflows.loader import list_workflows, load_workflow
 from solus.workflows.engine import execute_workflow
-from solus.workflows.models import Context
+from solus.workflows.models import Context, Workflow
 
 logger = logging.getLogger("solus.mcp")
+
+
+# Python type mapping for custom workflow params
+_PARAM_TYPE_MAP: dict[str, type] = {
+    "str": str,
+    "int": int,
+    "bool": bool,
+}
 
 
 def _build_context(source: str, config: Any, params: dict[str, Any] | None = None) -> Context:
@@ -56,6 +68,25 @@ def _make_serializable(obj: Any) -> Any:
         return str(obj)
 
 
+def _run_workflow_common(workflow_name: str, config: Any, params: dict[str, Any]) -> str:
+    """Shared execution logic for both default and custom-param tools."""
+    try:
+        wf = load_workflow(workflow_name)
+    except Exception as exc:
+        return json.dumps({"error": f"Failed to load workflow '{workflow_name}': {exc}"})
+
+    source = params.pop("source", "") or ""
+    ctx = _build_context(source, config, params)
+    ctx.data["runtime"] = {"no_cache": False, "verbose": False, "quiet_progress": True}
+
+    try:
+        result = execute_workflow(wf, ctx)
+        output = _filter_output(result.data)
+        return json.dumps(_make_serializable(output), indent=2)
+    except Exception as exc:
+        return json.dumps({"error": str(exc)})
+
+
 def create_mcp_server() -> FastMCP:
     """Create and configure the MCP server with workflow tools."""
     mcp = FastMCP("solus")
@@ -66,13 +97,16 @@ def create_mcp_server() -> FastMCP:
         print(f"[solus mcp] warning: skipping invalid workflow: {err}", file=sys.stderr)
 
     for wf in workflows:
-        _register_workflow_tool(mcp, wf.name, wf.description, config)
+        if wf.params:
+            _register_custom_tool(mcp, wf, config)
+        else:
+            _register_default_tool(mcp, wf.name, wf.description, config)
 
     return mcp
 
 
-def _register_workflow_tool(mcp: FastMCP, name: str, description: str, config: Any) -> None:
-    """Register a single workflow as an MCP tool."""
+def _register_default_tool(mcp: FastMCP, name: str, description: str, config: Any) -> None:
+    """Register a workflow with the default 4-param signature (backward compatible)."""
     tool_description = description or f"Run the '{name}' workflow."
 
     @mcp.tool(name=name, description=tool_description)
@@ -90,35 +124,59 @@ def _register_workflow_tool(mcp: FastMCP, name: str, description: str, config: A
             format: Output format (markdown, text, json).
             model: Override Ollama model for this run.
         """
-        workflow_name = name  # capture from closure
-        try:
-            wf = load_workflow(workflow_name)
-        except Exception as exc:
-            return json.dumps({"error": f"Failed to load workflow '{workflow_name}': {exc}"})
-
-        run_config = config
-        if model:
-            # Override model in a copy of config's ollama section
-            if hasattr(run_config, "ollama") and hasattr(run_config.ollama, "model"):
-                # Config is frozen, so we set the model via params instead
-                pass
-
-        params: dict[str, Any] = {"mode": mode, "format": format}
+        params: dict[str, Any] = {"source": source, "mode": mode, "format": format}
         if model:
             params["model"] = model
+        return _run_workflow_common(name, config, params)
 
-        ctx = _build_context(source, run_config, params)
-        ctx.data["runtime"] = {"no_cache": False, "verbose": False, "quiet_progress": True}
 
-        try:
-            result = execute_workflow(wf, ctx)
-            output = _filter_output(result.data)
-            return json.dumps(_make_serializable(output), indent=2)
-        except Exception as exc:
-            return json.dumps({"error": str(exc)})
+def _register_custom_tool(mcp: FastMCP, workflow: Workflow, config: Any) -> None:
+    """Register a workflow with custom parameters declared in its YAML.
 
-    # Each registration needs a unique function, but the decorator returns
-    # the same wrapper; the name= parameter on @mcp.tool handles uniqueness.
+    Uses ``mcp.tool()`` with a dynamically constructed function whose
+    signature matches the workflow's ``params:`` list.
+    """
+    import inspect
+
+    wf_name = workflow.name
+    tool_description = workflow.description or f"Run the '{wf_name}' workflow."
+
+    # Build an inspect.Parameter list from the workflow's declared params
+    sig_params: list[inspect.Parameter] = []
+    for wp in workflow.params:
+        py_type = _PARAM_TYPE_MAP.get(wp.type, str)
+        if wp.required and wp.default is None:
+            sig_params.append(inspect.Parameter(
+                wp.name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=py_type,
+            ))
+        else:
+            default = wp.default
+            # Coerce default to declared type
+            if default is not None:
+                try:
+                    default = py_type(default)
+                except (TypeError, ValueError):
+                    pass
+            sig_params.append(inspect.Parameter(
+                wp.name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=default,
+                annotation=py_type | None if default is None else py_type,
+            ))
+
+    sig = inspect.Signature(sig_params)
+
+    async def run_custom(**kwargs: Any) -> str:
+        return _run_workflow_common(wf_name, config, dict(kwargs))
+
+    # Attach the dynamic signature so FastMCP introspects correct params
+    run_custom.__signature__ = sig  # type: ignore[attr-defined]
+    run_custom.__name__ = wf_name
+    run_custom.__doc__ = tool_description
+
+    mcp.tool(name=wf_name, description=tool_description)(run_custom)
 
 
 def run_mcp_server() -> None:

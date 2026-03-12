@@ -20,10 +20,22 @@ class Step:
 
 
 @dataclass(frozen=True)
+class WorkflowParam:
+    """Declares a custom parameter for a workflow exposed as an MCP tool."""
+
+    name: str
+    type: str = "str"  # str, int, bool
+    default: Any = None
+    description: str = ""
+    required: bool = False
+
+
+@dataclass(frozen=True)
 class Workflow:
     name: str
     description: str
     steps: list[Step]
+    params: list[WorkflowParam] = field(default_factory=list)
 
 
 @dataclass

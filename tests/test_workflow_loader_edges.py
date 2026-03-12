@@ -9,6 +9,7 @@ import pytest
 
 from solus.workflows.loader import (
     WorkflowLoadError,
+    _parse_params,
     _parse_step,
     _parse_workflow,
     _load_yaml_file,
@@ -16,7 +17,7 @@ from solus.workflows.loader import (
     list_workflows,
     workflow_to_dict,
 )
-from solus.workflows.models import Step, Workflow
+from solus.workflows.models import Step, Workflow, WorkflowParam
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +127,69 @@ class TestParseStep:
 
 
 # ---------------------------------------------------------------------------
+# _parse_params validation
+# ---------------------------------------------------------------------------
+
+
+class TestParseParams:
+    def test_empty_params_returns_empty_list(self) -> None:
+        assert _parse_params([], "test.yaml") == []
+
+    def test_none_params_returns_empty_list(self) -> None:
+        assert _parse_params(None, "test.yaml") == []
+
+    def test_non_list_raises(self) -> None:
+        with pytest.raises(WorkflowLoadError, match="'params'.*must be a list"):
+            _parse_params("not-a-list", "test.yaml")
+
+    def test_non_dict_entry_raises(self) -> None:
+        with pytest.raises(WorkflowLoadError, match=r"params\[0\].*must be a mapping"):
+            _parse_params(["string"], "test.yaml")
+
+    def test_missing_name_raises(self) -> None:
+        with pytest.raises(WorkflowLoadError, match=r"params\[0\]\.name.*must be a non-empty string"):
+            _parse_params([{"type": "str"}], "test.yaml")
+
+    def test_empty_name_raises(self) -> None:
+        with pytest.raises(WorkflowLoadError, match=r"params\[0\]\.name.*must be a non-empty string"):
+            _parse_params([{"name": "  "}], "test.yaml")
+
+    def test_invalid_type_raises(self) -> None:
+        with pytest.raises(WorkflowLoadError, match=r"params\[0\]\.type.*must be str, int, or bool"):
+            _parse_params([{"name": "x", "type": "float"}], "test.yaml")
+
+    def test_valid_param_defaults(self) -> None:
+        result = _parse_params([{"name": "count"}], "test.yaml")
+        assert result == [WorkflowParam(name="count", type="str", default=None, description="", required=False)]
+
+    def test_valid_param_all_fields(self) -> None:
+        result = _parse_params(
+            [{"name": "count", "type": "int", "default": 5, "description": "Number of items", "required": True}],
+            "test.yaml",
+        )
+        assert len(result) == 1
+        p = result[0]
+        assert p.name == "count"
+        assert p.type == "int"
+        assert p.default == 5
+        assert p.description == "Number of items"
+        assert p.required is True
+
+    def test_multiple_params(self) -> None:
+        result = _parse_params(
+            [{"name": "alpha"}, {"name": "beta"}],
+            "test.yaml",
+        )
+        assert len(result) == 2
+        assert result[0].name == "alpha"
+        assert result[1].name == "beta"
+
+    def test_type_defaults_to_str(self) -> None:
+        result = _parse_params([{"name": "x"}], "test.yaml")
+        assert result[0].type == "str"
+
+
+# ---------------------------------------------------------------------------
 # _parse_workflow validation
 # ---------------------------------------------------------------------------
 
@@ -177,6 +241,32 @@ class TestParseWorkflow:
         assert wf.name == "test_wf"
         assert wf.description == "A test workflow"
         assert len(wf.steps) == 1
+
+    def test_workflow_with_params(self) -> None:
+        wf = _parse_workflow(
+            {
+                "name": "wf_with_params",
+                "description": "Has params",
+                "steps": [{"name": "s", "type": "t", "config": {}}],
+                "params": [{"name": "count", "type": "int", "default": 5, "description": "Items"}],
+            },
+            source="test.yaml",
+            interpolate_secrets=False,
+        )
+        assert len(wf.params) == 1
+        assert wf.params[0].name == "count"
+
+    def test_workflow_without_params_has_empty_list(self) -> None:
+        wf = _parse_workflow(
+            {
+                "name": "wf_no_params",
+                "description": "No params",
+                "steps": [{"name": "s", "type": "t", "config": {}}],
+            },
+            source="test.yaml",
+            interpolate_secrets=False,
+        )
+        assert wf.params == []
 
 
 # ---------------------------------------------------------------------------
@@ -335,3 +425,28 @@ class TestWorkflowToDict:
         assert "foreach" not in step
         assert "timeout" not in step
         assert "on_error" not in step
+
+    def test_params_serialized(self) -> None:
+        wf = Workflow(
+            name="test",
+            description="desc",
+            steps=[Step(name="s", type="t", config={})],
+            params=[WorkflowParam(name="count", type="int", default=5, description="Number")],
+        )
+        d = workflow_to_dict(wf)
+        assert "params" in d
+        assert len(d["params"]) == 1
+        p = d["params"][0]
+        assert p["name"] == "count"
+        assert p["type"] == "int"
+        assert p["default"] == 5
+        assert p["description"] == "Number"
+
+    def test_params_omitted_when_empty(self) -> None:
+        wf = Workflow(
+            name="test",
+            description="desc",
+            steps=[Step(name="s", type="t", config={})],
+        )
+        d = workflow_to_dict(wf)
+        assert "params" not in d
