@@ -146,11 +146,13 @@ def _register_custom_tool(mcp: FastMCP, workflow: Workflow, config: Any) -> None
     for wp in workflow.params:
         py_type = _PARAM_TYPE_MAP.get(wp.type, str)
         if wp.required and wp.default is None:
-            sig_params.append(inspect.Parameter(
-                wp.name,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=py_type,
-            ))
+            sig_params.append(
+                inspect.Parameter(
+                    wp.name,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=py_type,
+                )
+            )
         else:
             default = wp.default
             # Coerce default to declared type
@@ -159,12 +161,14 @@ def _register_custom_tool(mcp: FastMCP, workflow: Workflow, config: Any) -> None
                     default = py_type(default)
                 except (TypeError, ValueError):
                     pass
-            sig_params.append(inspect.Parameter(
-                wp.name,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                default=default,
-                annotation=py_type | None if default is None else py_type,
-            ))
+            sig_params.append(
+                inspect.Parameter(
+                    wp.name,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    default=default,
+                    annotation=py_type | None if default is None else py_type,
+                )
+            )
 
     sig = inspect.Signature(sig_params)
 

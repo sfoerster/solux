@@ -94,13 +94,15 @@ def _parse_params(raw: Any, source: str) -> list[WorkflowParam]:
         param_type = str(item.get("type", "str"))
         if param_type not in ("str", "int", "bool"):
             raise WorkflowLoadError(f"params[{idx}].type in {source} must be str, int, or bool")
-        params.append(WorkflowParam(
-            name=name.strip(),
-            type=param_type,
-            default=item.get("default"),
-            description=str(item.get("description", "")),
-            required=bool(item.get("required", False)),
-        ))
+        params.append(
+            WorkflowParam(
+                name=name.strip(),
+                type=param_type,
+                default=item.get("default"),
+                description=str(item.get("description", "")),
+                required=bool(item.get("required", False)),
+            )
+        )
     return params
 
 
@@ -243,13 +245,17 @@ def workflow_to_dict(workflow: Workflow) -> dict[str, Any]:
     }
     if workflow.params:
         result["params"] = [
-            {k: v for k, v in {
-                "name": p.name,
-                "type": p.type,
-                "default": p.default,
-                "description": p.description,
-                "required": p.required,
-            }.items() if v or k == "name"}
+            {
+                k: v
+                for k, v in {
+                    "name": p.name,
+                    "type": p.type,
+                    "default": p.default,
+                    "description": p.description,
+                    "required": p.required,
+                }.items()
+                if v or k == "name"
+            }
             for p in workflow.params
         ]
     return result
