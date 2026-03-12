@@ -12,6 +12,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+try:
+    import mcp  # noqa: F401
+
+    _has_mcp = True
+except ImportError:
+    _has_mcp = False
+
+_requires_mcp = pytest.mark.skipif(not _has_mcp, reason="mcp package not installed")
+
 
 @pytest.fixture
 def mock_config(tmp_path: Path):
@@ -54,6 +63,7 @@ def sample_workflows():
     ]
 
 
+@_requires_mcp
 class TestMCPServerCreation:
     """Test MCP server initialization and tool registration."""
 
@@ -94,6 +104,7 @@ class TestMCPServerCreation:
         assert server is not None
 
 
+@_requires_mcp
 class TestHelperFunctions:
     """Test internal helper functions."""
 
