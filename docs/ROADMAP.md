@@ -157,19 +157,28 @@ New built-in modules based on community demand (candidates):
 
 ### 3.5 External Service MCP Bridge
 
-Enable external service data to be queried through Solus's MCP server mode. Any service that exports structured JSON (or exposes a REST API) can be bridged into MCP tools for AI agents like Claude Code or Cursor.
+Enable external service data to be queried through Solus's MCP server mode. Any service that exports structured JSON (or exposes a REST API) can be bridged into MCP tools for AI agents like Claude Code, Codex, or Cursor.
 
 **Architecture:** An external service exports structured data (JSON file or REST API). A Solus workflow or external module reads it. `solus mcp` exposes the workflow as callable tools. AI agents connect to Solus's MCP server.
 
 ```
 AI agent  →  Solus MCP server  →  JSON file export (any service)
-                               →  REST API (any service, e.g. lc-server)
+                               →  REST API (any service)
 ```
 
+#### Core Modules
+
 - [ ] **`input.json_import` module** — Read a structured JSON file from a configurable path, validate against an expected schema version field, and load contents into workflow context. Generic — not tied to any specific service.
-- [ ] **`input.rest_api` module** — Fetch JSON from an authenticated REST endpoint. Supports bearer token auth, configurable headers, and response schema validation. Useful for querying lc-server or any external API as part of a workflow.
-- [ ] **MCP workflow-as-tool pattern** — Document and provide examples for the pattern of wrapping a Solus workflow as a set of MCP tools with typed parameters. The workflow defines what data to read and how to query it; `solus mcp` exposes it.
-- [ ] **Example external modules and workflows** — Ship as `examples/`, not core built-ins. First example: a linkedin-copilot engagement bridge (external module in `modules.d/` that reads the linkedin-copilot export schema; example workflows exposing author search, topic trends, content gaps, and target account recommendations as MCP tools).
+  - Config: `path` (file path, supports `${env:VAR}` interpolation), `schema_version` (expected version string, fail if mismatch), `encoding` (default utf-8)
+  - Output: full parsed JSON in workflow context under `data` key
+- [ ] **`input.rest_api` module** — Fetch JSON from an authenticated REST endpoint. Supports bearer token auth, configurable headers, and response schema validation.
+  - Config: `url`, `method` (default GET), `headers` (dict, supports `${env:VAR}`), `auth` (bearer token or none), `schema_version` (optional validation), `timeout` (default 30s)
+  - Output: parsed JSON response in workflow context under `data` key
+
+#### MCP Workflow-as-Tool Pattern
+
+- [ ] **Pattern documentation** — Document and provide examples for wrapping a Solus workflow as a set of MCP tools with typed parameters. The workflow defines what data to read and how to query it; `solus mcp` exposes it.
+- [ ] **Example external modules and workflows** — Ship as `examples/`, not core built-ins. Demonstrate the pattern of reading structured JSON from an external service, querying/filtering the data, and exposing the results as MCP tools. Examples should cover: loading a JSON export, querying a REST API with auth, filtering/ranking results, and cron-triggered scheduled workflows.
 
 ### 3.6 Usage Telemetry (opt-in)
 
