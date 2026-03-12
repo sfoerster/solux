@@ -29,5 +29,14 @@ htmlcov/
 .idea/
 .vscode/
 
+# Secrets / credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
 # OS files
 .DS_Store
