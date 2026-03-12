@@ -1,0 +1,75 @@
+# Use Case 4 — Email Inbox Triage
+#
+# Fetches up to `limit` unread emails from an IMAP inbox, sends them as a batch to a
+# local LLM for classification and prioritization, posts the triage report
+# to Slack, and archives it in a local SQLite table.
+#
+# Emails are NOT marked as read in your mail client — Solus tracks which
+# messages it has processed using its own trigger state database.
+#
+# Required environment variables (set in ~/.config/solus/.env):
+#   IMAP_HOST      — IMAP server (e.g. imap.gmail.com)
+#   IMAP_USER      — Your login email address
+#   IMAP_PASSWORD  — App password (NOT your account password)
+#   SLACK_WEBHOOK_URL
+#
+# For Gmail: enable IMAP and generate an App Password at
+#   https://myaccount.google.com/apppasswords
+#
+# Trigger: see triggers.d/email_triage_cron.yaml (runs every 5 minutes)
+# Manual run: solus run --workflow email_triage email_triage
+# Set `limit: 0` below to process all unread messages.
+
+name: email_triage
+description: "Fetch unread emails, classify by priority and category, alert via Slack"
+
+steps:
+  - name: fetch_emails
+    type: input.email_inbox
+    config:
+      host: "${env:IMAP_HOST}"
+      port: 993
+      username: "${env:IMAP_USER}"
+      password: "${env:IMAP_PASSWORD}"
+      folder: INBOX
+      unseen_only: true
+      limit: 25
+      output_key: messages
+
+  - name: triage_messages
+    type: ai.llm_prompt
+    config:
+      input_key: messages
+      output_key: triage_report
+      system_prompt: >
+        You are an expert email triage assistant. Be direct and concise.
+        Never include personal opinions or advice beyond triage.
+      prompt_template: |
+        Triage the following emails. For each email, classify and prioritize it.
+
+        Categories: support_request | billing | partnership_inquiry | spam | internal | other
+        Priority:   HIGH (needs same-day response) | MEDIUM (respond within 48h) | LOW (no response needed)
+
+        Emails:
+        {messages}
+
+        Format your response as a structured list. For each email:
+        - Subject: [subject]
+          From:    [sender]
+          Category: [category]
+          Priority: [priority]
+          Summary:  [one sentence describing the email]
+
+  - name: post_to_slack
+    type: output.slack_notify
+    config:
+      webhook_url: "${env:SLACK_WEBHOOK_URL}"
+      input_key: triage_report
+      username: "Email Triage"
+      icon_emoji: ":email:"
+
+  - name: archive_log
+    type: output.local_db
+    config:
+      table: email_triage_log
+      input_key: triage_report

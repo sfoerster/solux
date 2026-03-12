@@ -1,0 +1,55 @@
+# Use Case 1 — Podcast & YouTube Transcription
+#
+# Downloads audio from a URL (YouTube, podcast RSS link, or direct MP3) or
+# accepts a local audio file, transcribes it with whisper.cpp, and summarizes
+# the transcript with a local Ollama model. Output is written to a markdown
+# file and optionally to an Obsidian vault.
+#
+# Usage:
+#   solus run --workflow podcast_summary "https://youtube.com/watch?v=..."
+#   solus run --workflow podcast_summary episode.mp3 --mode tldr
+#   solus ingest ~/Downloads/Podcasts/*.mp3 --workflow podcast_summary
+#
+# Trigger: see triggers.d/watch_audio.yaml
+
+name: podcast_summary
+description: "Download, transcribe, and summarize audio from a URL or local file"
+
+steps:
+  - name: fetch_source
+    type: input.source_fetch
+    config: {}
+
+  - name: normalize_audio
+    type: transform.audio_normalize
+    config: {}
+
+  - name: transcribe
+    type: ai.whisper_transcribe
+    config: {}
+
+  - name: summarize
+    type: ai.llm_summarize
+    config:
+      input_key: transcript_text
+      mode: full           # full | tldr | outline | notes | transcript
+      format: markdown
+      timestamps: true
+
+  - name: save_to_file
+    type: output.file_write
+    config:
+      input_key: summary_text
+      format: markdown
+
+  - name: save_to_obsidian
+    type: output.obsidian_vault
+    config:
+      vault_path: "${env:OBSIDIAN_VAULT_PATH}"
+      folder: "Podcasts"
+      input_key: summary_text
+      filename_key: display_name
+      tags:
+        - podcast
+        - ai-summary
+      overwrite: false

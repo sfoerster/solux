@@ -1,0 +1,17 @@
+# Release-time license policy for dependency checks.
+# Tune these values with counsel before production releases.
+
+# Case-insensitive substrings/regex fragments that should block release.
+deny_patterns = [
+  "\\bgnu affero general public license\\b",
+  "\\bgnu lesser general public license\\b",
+  "\\bgnu general public license\\b",
+  "\\bserver side public license\\b",
+  "\\bsspl\\b",
+]
+
+# Package names to ignore during checks (normalized lowercase).
+# Keep this list minimal and documented.
+ignore_packages = [
+  "solus",
+]

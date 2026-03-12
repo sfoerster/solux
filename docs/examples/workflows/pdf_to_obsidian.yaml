@@ -1,0 +1,63 @@
+# Use Case 3 — Drop-Folder PDF → Obsidian Notes
+#
+# Watches a folder for new PDFs. For each new file: extracts the text,
+# cleans it, summarizes it in bullet-note format, extracts structured
+# metadata (title, authors, date, topic, key claims), and writes a
+# formatted note with YAML frontmatter into an Obsidian vault.
+#
+# Required environment variables (set in ~/.config/solus/.env):
+#   OBSIDIAN_VAULT_PATH — absolute path to your Obsidian vault root
+#
+# Trigger: see triggers.d/watch_pdfs.yaml
+# Manual run: solus run --workflow pdf_to_obsidian /path/to/file.pdf
+#
+# Dependencies: pip install 'solus[pdf]'
+
+name: pdf_to_obsidian
+description: "Extract, summarize, and file a PDF as a structured Obsidian note"
+
+steps:
+  - name: extract_text
+    type: input.parse_pdf
+    config:
+      output_key: pdf_text
+
+  - name: clean_text
+    type: transform.text_clean
+    config:
+      input_key: pdf_text
+      strip_html: true
+      normalize_whitespace: true
+      max_chars: 15000
+      output_key: cleaned_text
+
+  - name: summarize
+    type: ai.llm_summarize
+    config:
+      input_key: cleaned_text
+      mode: notes          # Structured bullet notes
+      format: markdown
+
+  - name: extract_metadata
+    type: ai.llm_extract
+    config:
+      input_key: cleaned_text
+      output_key: extracted_meta
+      fields:
+        - title
+        - authors
+        - date
+        - topic
+        - key_claims
+
+  - name: write_note
+    type: output.obsidian_vault
+    config:
+      vault_path: "${env:OBSIDIAN_VAULT_PATH}"
+      folder: "Inbox/PDFs"
+      input_key: summary_text
+      filename_key: display_name    # Uses the PDF filename; rename notes manually if needed
+      tags:
+        - pdf
+        - auto-imported
+      overwrite: false

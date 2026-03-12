@@ -1,0 +1,7 @@
+# Global default owner
+* @sfoerster
+
+# Security-sensitive areas
+src/solus/serve/ @sfoerster
+src/solus/workflows/ @sfoerster
+src/solus/modules/ @sfoerster

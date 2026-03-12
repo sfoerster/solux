@@ -1,0 +1,85 @@
+# Use Case 5 — Research Article Ingestion & Semantic Search Index
+#
+# Fetches a web article, cleans and chunks the text, generates a whole-document
+# summary and extracts structured metadata, then embeds each chunk locally via
+# Ollama and stores them in a ChromaDB collection for semantic search.
+# The document summary is also written to an Obsidian vault.
+#
+# Required environment variables (set in ~/.config/solus/.env):
+#   OBSIDIAN_VAULT_PATH
+#
+# Usage (manual — paste any URL):
+#   solus run --workflow article_index "https://example.com/interesting-post"
+#
+# To query the vector store after indexing, use a tool like ChromaDB's Python
+# client directly, or build a query workflow with ai.embeddings + a custom
+# retrieval module.
+#
+# Dependencies: pip install 'solus[vector]'
+# Sub-workflow:  chunk_embed_store.yaml (must be present in workflows.d/)
+
+name: article_index
+description: "Fetch, chunk, embed, and index a web article for local semantic search"
+
+steps:
+  - name: fetch_page
+    type: input.webpage_fetch
+    config: {}
+
+  - name: clean_text
+    type: transform.text_clean
+    config:
+      input_key: webpage_text
+      strip_html: true
+      normalize_whitespace: true
+      max_chars: 50000
+      output_key: cleaned_text
+
+  - name: split_into_chunks
+    type: transform.text_split
+    config:
+      input_key: cleaned_text
+      output_key: text_chunks
+      method: paragraph
+      chunk_size: 800
+      overlap: 100
+
+  - name: summarize_document
+    type: ai.llm_summarize
+    config:
+      input_key: cleaned_text
+      mode: notes
+      format: markdown
+
+  - name: extract_metadata
+    type: ai.llm_extract
+    config:
+      input_key: cleaned_text
+      output_key: article_meta
+      fields:
+        - title
+        - author
+        - published_date
+        - topic_tags
+        - key_concepts
+
+  # Embed + store each chunk atomically via sub-workflow.
+  # Using a sub-workflow ensures each chunk's embedding is paired with the
+  # correct chunk text (two independent foreach steps would mismatch them).
+  - name: index_chunks
+    type: workflow
+    foreach: text_chunks
+    config:
+      name: chunk_embed_store
+
+  - name: save_to_obsidian
+    type: output.obsidian_vault
+    config:
+      vault_path: "${env:OBSIDIAN_VAULT_PATH}"
+      folder: "Research"
+      input_key: summary_text
+      filename_key: display_name
+      tags:
+        - research
+        - auto-indexed
+      overwrite: false

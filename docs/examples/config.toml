@@ -1,0 +1,42 @@
+# Solus configuration — edit paths to match your system.
+# Run `solus doctor` after editing to verify everything is found.
+
+[paths]
+cache_dir = "~/.local/share/solus"
+
+[whisper]
+# threads = 4                          # Default: CPU core count
+# cli_path  = "~/whisper.cpp/build/bin/whisper-cli"
+# model_path = "~/whisper.cpp/models/ggml-medium.en.bin"
+
+[ollama]
+base_url = "http://localhost:11434"
+model = "qwen3:8b"
+# max_transcript_chars = 8000          # Truncate long transcripts before LLM call
+
+[yt_dlp]
+binary = "yt-dlp"
+
+[ffmpeg]
+binary = "ffmpeg"
+
+[workflows]
+dir = "~/.config/solus/workflows.d"
+
+[modules]
+dir = "~/.config/solus/modules.d"
+
+[triggers]
+dir = "~/.config/solus/triggers.d"
+
+[security]
+mode = "trusted"
+# webhook_secret    = ""                     # HMAC-SHA256 secret for webhook signature validation
+# webhook_rate_limit = 60                    # Integer >= 1; max POST /api/trigger/* requests per IP per minute
+# oidc_issuer       = "https://idp.example.com/realms/myrealm"
+# oidc_audience     = "solus"               # required when oidc_require_auth = true
+# oidc_require_auth = false
+
+[prompts]
+# system = "You are a helpful assistant."
+# tldr   = "Give a 2-3 sentence summary."

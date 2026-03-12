@@ -1,0 +1,20 @@
+# Use Case 1 — Watch folder for new audio files (MP3)
+#
+# Solus polls ~/Downloads/Podcasts every 30 seconds for new .mp3 files.
+# Each new file is automatically queued for the podcast_summary workflow.
+#
+# To also watch for MP4 files (YouTube downloads), create a second trigger
+# file (e.g. watch_audio_mp4.yaml) with pattern: "*.mp4".
+#
+# Adjust `path` to wherever you save podcast downloads.
+
+name: watch_audio_mp3
+enabled: false
+type: folder_watch
+workflow: podcast_summary
+params:
+  mode: full
+config:
+  path: ~/Downloads/Podcasts
+  pattern: "*.mp3"
+  interval: 30

@@ -1,0 +1,25 @@
+[Unit]
+Description=Solus AI Workflow Engine — Background Worker
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=solus
+Group=solus
+ExecStart=/usr/bin/env solus worker start --_run-loop --workers 2
+Restart=on-failure
+RestartSec=10
+
+# Paths
+Environment=HOME=/home/solus
+WorkingDirectory=/home/solus
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/solus/.local/share/solus /home/solus/.config/solus
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

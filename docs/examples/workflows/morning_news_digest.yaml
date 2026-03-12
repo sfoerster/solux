@@ -1,0 +1,57 @@
+# Use Case 2 — Morning News Digest
+#
+# Fetches the latest items from an RSS feed, passes them all to a local LLM
+# to compose a single daily briefing, and posts it to Slack.
+#
+# The RSS URL is set directly in this file. To follow multiple feeds, duplicate
+# the fetch + compose steps with different output_key names and merge them in
+# the prompt template.
+#
+# Required environment variables (set in ~/.config/solus/.env):
+#   SLACK_WEBHOOK_URL — Slack incoming webhook URL
+#
+# Trigger: see triggers.d/morning_digest_cron.yaml
+# Manual run: solus run --workflow morning_news_digest morning_news_digest
+
+name: morning_news_digest
+description: "Fetch RSS headlines, summarize, and post a daily briefing to Slack"
+
+steps:
+  - name: fetch_feed
+    type: input.rss_feed
+    config:
+      # Replace with your preferred feed(s). Ars Technica used as example.
+      url: "https://feeds.arstechnica.com/arstechnica/index"
+      limit: 15
+      output_key: feed_items
+
+  - name: compose_digest
+    type: ai.llm_prompt
+    config:
+      input_key: feed_items
+      output_key: digest_text
+      system_prompt: >
+        You are a concise news briefing assistant. Write clearly and objectively.
+        Avoid filler phrases like "here is your digest".
+      prompt_template: |
+        Below are today's top news items (title, link, summary, published date):
+
+        {feed_items}
+
+        Write a morning briefing covering the most important stories.
+        Group related topics together. Use bullet points.
+        Keep the total length under 500 words.
+
+  - name: post_to_slack
+    type: output.slack_notify
+    config:
+      webhook_url: "${env:SLACK_WEBHOOK_URL}"
+      input_key: digest_text
+      username: "Morning Digest"
+      icon_emoji: ":newspaper:"
+
+  - name: save_to_file
+    type: output.file_write
+    config:
+      input_key: digest_text
+      format: markdown

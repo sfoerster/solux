@@ -1,0 +1,17 @@
+# Use Case 6 — Distributed Pipeline: Node A ingestion trigger
+#
+# Deploy this trigger on Node A (the lightweight ingestion machine).
+# Edit `path` to the folder where incoming PDFs land (e.g. an rsync target,
+# NFS mount, or cloud-storage sync folder).
+#
+# The ingest_and_forward workflow will extract the PDF text and forward it
+# to the GPU Node B defined by GPU_NODE_URL in ~/.config/solus/.env.
+
+name: watch_incoming_pdfs
+enabled: false
+type: folder_watch
+workflow: ingest_and_forward
+config:
+  path: ~/sync/incoming-pdfs    # EDIT: change to your actual sync folder
+  pattern: "*.pdf"
+  interval: 30

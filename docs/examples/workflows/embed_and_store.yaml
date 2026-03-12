@@ -1,0 +1,62 @@
+# Use Case 6 — Distributed Pipeline: Node B (GPU inference node)
+#
+# Runs on a GPU-equipped machine with Ollama for fast inference.
+# Receives cleaned document text forwarded by Node A via vinsium_node.
+# Chunks the text, embeds each chunk, stores in ChromaDB, summarizes
+# the document, and posts the summary back to Node A via webhook.
+#
+# The forwarded text arrives in ctx.params["text"] (set by vinsium_node).
+# The custom `transform.params_loader` module (modules.d/params_loader.py)
+# bridges it into ctx.data so standard modules can access it.
+#
+# Required environment variables (set in ~/.config/solus/.env on Node B):
+#   NODE_A_CALLBACK_URL — e.g. http://192.168.1.10:8765/api/trigger/ingest_done
+#                          (leave empty to skip callback_to_node_a automatically)
+#
+# Sub-workflow: embed_one_chunk.yaml (must be present in this workflows.d/)
+# Custom module: modules.d/params_loader.py
+#
+# Dependencies: pip install 'solus[vector]'
+
+name: embed_and_store
+description: "Receive forwarded text, chunk, embed, store in ChromaDB, then callback with summary"
+
+steps:
+  - name: load_forwarded_text
+    type: transform.params_loader
+    config:
+      output_key: cleaned_text
+
+  - name: split_into_chunks
+    type: transform.text_split
+    config:
+      input_key: cleaned_text
+      output_key: text_chunks
+      method: paragraph
+      chunk_size: 512
+      overlap: 64
+
+  # Embed + store each chunk atomically via sub-workflow.
+  - name: index_chunks
+    type: workflow
+    foreach: text_chunks
+    config:
+      name: embed_one_chunk
+
+  - name: summarize_document
+    type: ai.llm_summarize
+    config:
+      input_key: cleaned_text
+      mode: notes
+      format: markdown
+
+  # Optional: POST summary back to Node A.
+  # Remove or disable this step if you don't need the callback.
+  - name: callback_to_node_a
+    type: output.webhook
+    when: node_a_callback_url != ''
+    config:
+      url: "${env:NODE_A_CALLBACK_URL}"
+      input_key: summary_text
+      wrap_key: result
+      raise_on_error: false

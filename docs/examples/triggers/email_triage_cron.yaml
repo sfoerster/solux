@@ -1,0 +1,18 @@
+# Use Case 4 — Email Triage (runs every 5 minutes)
+#
+# Fires the email_triage workflow every 5 minutes. The workflow calls
+# input.email_inbox to fetch all currently-unread messages, so each run
+# processes the full unread batch. Runs with no params — all IMAP
+# credentials are read from environment variables in the workflow itself.
+#
+# To slow down polling (e.g. every 15 minutes), change interval_seconds to 900.
+#
+# Note: the IMAP_HOST, IMAP_USER, and IMAP_PASSWORD environment variables must
+# be available when `solus worker start` is invoked (source ~/.config/solus/.env).
+
+name: email_triage_cron
+enabled: false
+type: cron
+workflow: email_triage
+config:
+  interval_seconds: 300

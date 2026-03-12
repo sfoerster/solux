@@ -1,0 +1,17 @@
+# Use Case 2 — Morning News Digest
+#
+# Fires the morning_news_digest workflow at 07:00 UTC, Monday–Friday.
+# The workflow itself fetches the RSS feed and posts to Slack.
+#
+# Cron expression reference: minute hour day-of-month month day-of-week
+#   "0 7 * * 1-5" = 07:00 UTC, Mon–Fri
+#
+# Adjust the schedule to your preferred time (UTC).
+# Example — 08:00 every day including weekends: "0 8 * * *"
+
+name: morning_digest_cron
+enabled: false
+type: cron
+workflow: morning_news_digest
+config:
+  schedule: "0 7 * * 1-5"

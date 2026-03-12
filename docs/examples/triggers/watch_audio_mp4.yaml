@@ -1,0 +1,14 @@
+# Use Case 1 — Watch folder for new audio files (MP4 / YouTube downloads)
+#
+# Companion to watch_audio.yaml — handles MP4 files saved by yt-dlp.
+
+name: watch_audio_mp4
+enabled: false
+type: folder_watch
+workflow: podcast_summary
+params:
+  mode: full
+config:
+  path: ~/Downloads/Podcasts
+  pattern: "*.mp4"
+  interval: 30

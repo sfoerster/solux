@@ -1,0 +1,14 @@
+.git
+.gitignore
+.claude
+.github
+tests
+docs
+*.md
+!README.md
+__pycache__
+*.pyc
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage

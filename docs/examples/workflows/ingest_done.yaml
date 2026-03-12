@@ -1,0 +1,34 @@
+# Use Case 6 — Distributed Pipeline: Node A callback receiver (optional)
+#
+# Receives callback payloads from Node B at:
+#   /api/trigger/ingest_done
+#
+# embed_and_store.yaml on Node B posts:
+#   {"result": "<summary markdown>"}
+# This workflow reads ctx.params["result"], copies it into ctx.data["summary_text"],
+# then writes it to a local markdown file.
+#
+# Requires custom module:
+#   docs/examples/modules/params_loader.py
+#
+# Manual test:
+#   curl -X POST http://127.0.0.1:8765/api/trigger/ingest_done \
+#     -H "Content-Type: application/json" \
+#     -d '{"result":"Test callback from Node B"}'
+
+name: ingest_done
+description: "Receive Node B summary callback and persist it locally"
+
+steps:
+  - name: load_callback_summary
+    type: transform.params_loader
+    config:
+      param_key: result
+      output_key: summary_text
+
+  - name: save_callback_summary
+    type: output.file_write
+    config:
+      input_key: summary_text
+      mode: callback
+      format: markdown

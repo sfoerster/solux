@@ -1,0 +1,30 @@
+# Sub-workflow: embed one text chunk and store in ChromaDB
+#
+# Called by article_index.yaml via:
+#   type: workflow
+#   foreach: text_chunks
+#   config:
+#     name: chunk_embed_store
+#
+# When called from a foreach loop, _item is the current chunk string.
+# This sub-workflow ensures embed + store happen atomically per chunk,
+# avoiding the stale-embedding issue that arises from two separate foreach steps.
+#
+# Dependencies: pip install 'solus[vector]'
+
+name: chunk_embed_store
+description: "Embed a single text chunk (_item) and upsert into ChromaDB (research_corpus)"
+
+steps:
+  - name: embed_chunk
+    type: ai.embeddings
+    config:
+      input_key: _item
+      output_key: embedding
+
+  - name: store_chunk
+    type: output.vector_store
+    config:
+      collection: research_corpus
+      text_key: _item
+      embedding_key: embedding
