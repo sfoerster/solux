@@ -1,6 +1,6 @@
 # Solus Roadmap
 
-> Local-first AI workflow engine — "self-hosted Zapier for local LLMs"
+> Local-first AI workflow engine for local LLMs
 
 This roadmap outlines planned development for Solus, organized into phases. Priorities will shift based on community feedback.
 

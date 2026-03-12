@@ -1,6 +1,6 @@
 # Solus
 
-**Self-hosted Zapier for local LLMs** — chain inputs, transforms, and AI steps into automated workflows. Everything runs on your machine.
+**Local-first AI workflow engine** — chain inputs, transforms, and AI steps into automated workflows. Everything runs on your machine.
 
 ```bash
 pip install solus
@@ -14,7 +14,7 @@ That's it. In 60 seconds you go from zero to a working AI pipeline that fetches 
 
 ## What is Solus?
 
-Solus is a local-first AI workflow engine that chains **inputs → transforms → local LLM steps → outputs** using simple YAML definitions. Think of it as Zapier or n8n, but designed for local AI inference — no cloud APIs, no vendor lock-in, no data leaving your machine.
+Solus is a local-first AI workflow engine that chains **inputs → transforms → local LLM steps → outputs** using simple YAML definitions. Think of it as a workflow automation tool designed for local AI inference — no cloud APIs, no vendor lock-in, no data leaving your machine.
 
 You define workflows as YAML files. Each workflow is a pipeline of steps: fetch a webpage, clean the text, summarize with Ollama, write the result to a file or send it to Slack. Solus comes with 30+ built-in modules and you can add your own by dropping a `.py` file into a directory.
 
