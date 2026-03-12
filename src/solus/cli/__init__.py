@@ -19,6 +19,7 @@ from .init import cmd_init
 from .maintenance import cmd_doctor, cmd_config, cmd_config_edit, cmd_cleanup, cmd_retry, cmd_repair
 from .server import cmd_serve
 from .worker_cmd import cmd_worker
+from .mcp_cmd import cmd_mcp
 from .triggers import (
     cmd_triggers_list,
     cmd_triggers_show,
@@ -53,6 +54,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "worker",
         "triggers",
         "examples",
+        "mcp",
         "-h",
         "--help",
     }
@@ -125,6 +127,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_retry(args)
     if args.command == "repair":
         return cmd_repair()
+    if args.command == "mcp":
+        return cmd_mcp(args)
     if args.command == "worker":
         return cmd_worker(args)
 

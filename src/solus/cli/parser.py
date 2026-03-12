@@ -288,6 +288,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repair the job queue by recovering from filesystem and resetting stuck jobs",
     )
 
+    subparsers.add_parser(
+        "mcp",
+        help="Start MCP server (stdio transport) for AI agent integration",
+    )
+
     worker_parser = subparsers.add_parser(
         "worker",
         help="Manage the background queue worker",

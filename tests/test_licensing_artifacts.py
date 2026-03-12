@@ -17,8 +17,8 @@ def test_core_dependencies_do_not_include_html2text() -> None:
 
 def test_license_names_copyright_holder() -> None:
     license_text = (_repo_root() / "LICENSE").read_text(encoding="utf-8")
-    assert "Copyright (c) 2026 Steven Foerster" in license_text
-    assert "Licensor" in license_text
+    assert "Copyright 2026 Steven Foerster" in license_text
+    assert "Apache License" in license_text
 
 
 def test_third_party_notices_present_and_lists_core_runtime_dependencies() -> None:

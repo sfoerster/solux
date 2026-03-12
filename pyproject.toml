@@ -46,6 +46,9 @@ oidc = [
 encrypt = [
   "pysqlcipher3>=1.2,<2",
 ]
+mcp = [
+  "mcp>=1.0,<2",
+]
 
 [project.scripts]
 solus = "solus.cli:main"
@@ -91,6 +94,8 @@ module = [
   "pypdf",
   "chromadb",
   "boto3",
+  "mcp",
+  "mcp.*",
 ]
 ignore_missing_imports = true
 
