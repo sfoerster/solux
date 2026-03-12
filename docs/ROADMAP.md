@@ -155,7 +155,23 @@ New built-in modules based on community demand (candidates):
 - [ ] **OpenAPI spec** — auto-generated from the serve routes
 - [ ] **n8n / Node-RED nodes** — bridge modules for users already in those ecosystems
 
-### 3.5 Usage Telemetry (opt-in)
+### 3.5 External Service MCP Bridge
+
+Enable external service data to be queried through Solus's MCP server mode. Any service that exports structured JSON (or exposes a REST API) can be bridged into MCP tools for AI agents like Claude Code or Cursor.
+
+**Architecture:** An external service exports structured data (JSON file or REST API). A Solus workflow or external module reads it. `solus mcp` exposes the workflow as callable tools. AI agents connect to Solus's MCP server.
+
+```
+AI agent  →  Solus MCP server  →  JSON file export (any service)
+                               →  REST API (any service, e.g. lc-server)
+```
+
+- [ ] **`input.json_import` module** — Read a structured JSON file from a configurable path, validate against an expected schema version field, and load contents into workflow context. Generic — not tied to any specific service.
+- [ ] **`input.rest_api` module** — Fetch JSON from an authenticated REST endpoint. Supports bearer token auth, configurable headers, and response schema validation. Useful for querying lc-server or any external API as part of a workflow.
+- [ ] **MCP workflow-as-tool pattern** — Document and provide examples for the pattern of wrapping a Solus workflow as a set of MCP tools with typed parameters. The workflow defines what data to read and how to query it; `solus mcp` exposes it.
+- [ ] **Example external modules and workflows** — Ship as `examples/`, not core built-ins. First example: a linkedin-copilot engagement bridge (external module in `modules.d/` that reads the linkedin-copilot export schema; example workflows exposing author search, topic trends, content gaps, and target account recommendations as MCP tools).
+
+### 3.6 Usage Telemetry (opt-in)
 
 - [ ] Opt-in, privacy-respecting telemetry: anonymous aggregate counts (module invocations, workflow success/failure rates, step durations) — no workflow content, no source data, no PII
 - [ ] `config.toml` gets a `[telemetry]` section with `enabled = false` by default
