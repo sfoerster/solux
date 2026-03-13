@@ -76,7 +76,7 @@ solux = "solux.cli:main"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "--cov=solux --cov-report=term-missing --cov-report=html"
+addopts = "--cov=solux --cov-report=term-missing --cov-report=html --cov-fail-under=70"
 
 [tool.ruff]
 target-version = "py311"
