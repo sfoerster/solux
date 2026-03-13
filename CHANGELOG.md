@@ -8,12 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
-- Custom workflow parameters (`params:`) — workflows can declare typed parameters (str, int, bool) in their YAML. When exposed via `solux mcp`, each workflow registers with its own parameter signature instead of the default 4-param (source, mode, format, model) signature. Backward compatible — workflows without `params:` keep the existing signature.
-
 ## [0.5.0] — 2026-03-08 (Phase 1: 60-Second Onboarding)
 
 ### Added
+- Custom workflow parameters (`params:`) — workflows can declare typed parameters (str, int, bool) in their YAML. When exposed via `solux mcp`, each workflow registers with its own parameter signature instead of the default 4-param (source, mode, format, model) signature. Backward compatible — workflows without `params:` keep the existing signature.
+- PyPI metadata: classifiers, keywords, project URLs
+- Python 3.13 support (added to CI matrix, all tests passing)
 - `solux init` command — guided first-run setup with auto-discovery of Ollama, model verification, workflow scaffolding, and doctor validation
 - `solux examples` shorthand (alias for `solux workflows examples`)
 - `solux run --dry-run` visual execution plan with step names, types, and arrows
