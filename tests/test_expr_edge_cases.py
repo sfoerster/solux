@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from solus.workflows.expr import evaluate_when, _eval_node, _check_safe
+from solux.workflows.expr import evaluate_when, _eval_node, _check_safe
 import ast
 
 

@@ -14,9 +14,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.serve.api import verify_webhook_signature
-from solus.workflows.engine import StepTimeoutError, _run_step_with_optional_timeout
-from solus.workflows.models import Context, Step
+from solux.serve.api import verify_webhook_signature
+from solux.workflows.engine import StepTimeoutError, _run_step_with_optional_timeout
+from solux.workflows.models import Context, Step
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ class TestStepTimeout:
 class TestDefusedXml:
     def test_rss_feed_uses_defusedxml(self):
         """Verify rss_feed module imports defusedxml.ElementTree."""
-        from solus.modules.input import rss_feed
+        from solux.modules.input import rss_feed
         import defusedxml.ElementTree as SafeET
 
         # The module should have SafeET available at module level
@@ -141,29 +141,29 @@ class TestDefusedXml:
 
 class TestRedirectGuard:
     def test_no_redirect(self):
-        from solus.modules._helpers import fetch_with_redirect_guard
+        from solux.modules._helpers import fetch_with_redirect_guard
 
         mock_resp = MagicMock()
         mock_resp.is_redirect = False
         mock_resp.is_permanent_redirect = False
         mock_resp.raise_for_status = MagicMock()
-        with patch("solus.modules._helpers.requests.get", return_value=mock_resp):
+        with patch("solux.modules._helpers.requests.get", return_value=mock_resp):
             result = fetch_with_redirect_guard("https://example.com", context="test")
         assert result is mock_resp
 
     def test_too_many_redirects(self):
-        from solus.modules._helpers import fetch_with_redirect_guard
+        from solux.modules._helpers import fetch_with_redirect_guard
 
         mock_resp = MagicMock()
         mock_resp.is_redirect = True
         mock_resp.is_permanent_redirect = False
         mock_resp.headers = {"Location": "https://example.com/loop"}
-        with patch("solus.modules._helpers.requests.get", return_value=mock_resp):
+        with patch("solux.modules._helpers.requests.get", return_value=mock_resp):
             with pytest.raises(RuntimeError, match="too many redirects"):
                 fetch_with_redirect_guard("https://example.com", context="test")
 
     def test_single_redirect_followed(self):
-        from solus.modules._helpers import fetch_with_redirect_guard
+        from solux.modules._helpers import fetch_with_redirect_guard
 
         redirect_resp = MagicMock()
         redirect_resp.is_redirect = True
@@ -175,12 +175,12 @@ class TestRedirectGuard:
         final_resp.is_permanent_redirect = False
         final_resp.raise_for_status = MagicMock()
 
-        with patch("solus.modules._helpers.requests.get", side_effect=[redirect_resp, final_resp]):
+        with patch("solux.modules._helpers.requests.get", side_effect=[redirect_resp, final_resp]):
             result = fetch_with_redirect_guard("https://example.com", context="test")
         assert result is final_resp
 
     def test_block_private_ip(self):
-        from solus.modules._helpers import fetch_with_redirect_guard
+        from solux.modules._helpers import fetch_with_redirect_guard
 
         with pytest.raises(RuntimeError, match="private or loopback"):
             fetch_with_redirect_guard(
@@ -197,7 +197,7 @@ class TestRedirectGuard:
 
 class TestPayloadSizeLimit:
     def test_webhook_max_body_bytes_constant_exists(self):
-        from solus.serve.handler import _MAX_UPLOAD_BYTES, _MAX_WEBHOOK_BYTES
+        from solux.serve.handler import _MAX_UPLOAD_BYTES, _MAX_WEBHOOK_BYTES
 
         assert _MAX_WEBHOOK_BYTES <= _MAX_UPLOAD_BYTES
         assert _MAX_WEBHOOK_BYTES > 0

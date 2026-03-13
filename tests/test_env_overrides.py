@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from solus.config import load_config
+from solux.config import load_config
 
 
-def test_solus_oidc_env_overrides_config(tmp_path: Path, monkeypatch) -> None:
+def test_solux_oidc_env_overrides_config(tmp_path: Path, monkeypatch) -> None:
     config_path = tmp_path / "config.toml"
     config_path.write_text(
         """
@@ -18,9 +18,9 @@ oidc_require_auth = false
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("SOLUS_OIDC_ISSUER", "https://from-env.example/realms/myrealm")
-    monkeypatch.setenv("SOLUS_OIDC_AUDIENCE", "from-env")
-    monkeypatch.setenv("SOLUS_OIDC_REQUIRE_AUTH", "true")
+    monkeypatch.setenv("SOLUX_OIDC_ISSUER", "https://from-env.example/realms/myrealm")
+    monkeypatch.setenv("SOLUX_OIDC_AUDIENCE", "from-env")
+    monkeypatch.setenv("SOLUX_OIDC_REQUIRE_AUTH", "true")
 
     cfg = load_config(config_path)
     assert cfg.security.oidc_issuer == "https://from-env.example/realms/myrealm"
@@ -39,7 +39,7 @@ syslog_addr = ""
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("SOLUS_AUDIT_ENABLED", "false")
+    monkeypatch.setenv("SOLUX_AUDIT_ENABLED", "false")
     monkeypatch.setenv("AUDIT_SYSLOG_ADDR", "udp://siem.internal:514")
 
     cfg = load_config(config_path)

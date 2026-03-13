@@ -3,7 +3,7 @@ requires = ["hatchling>=1.24.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "solus"
+name = "solux"
 version = "0.5.0"
 description = "Local-first AI workflow engine for chaining inputs, transforms, and local LLM steps."
 readme = "README.md"
@@ -51,12 +51,12 @@ mcp = [
 ]
 
 [project.scripts]
-solus = "solus.cli:main"
+solux = "solux.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "--cov=solus --cov-report=term-missing --cov-report=html"
+addopts = "--cov=solux --cov-report=term-missing --cov-report=html"
 
 [tool.ruff]
 target-version = "py311"
@@ -101,11 +101,11 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-  "solus.triggers.loader",
-  "solus.modules.transform.ocr",
-  "solus.modules.transform.metadata_extract",
-  "solus.modules.output.vector_store",
-  "solus.modules.input.parse_pdf",
-  "solus.modules.input.s3_watcher",
+  "solux.triggers.loader",
+  "solux.modules.transform.ocr",
+  "solux.modules.transform.metadata_extract",
+  "solux.modules.output.vector_store",
+  "solux.modules.input.parse_pdf",
+  "solux.modules.input.s3_watcher",
 ]
 disable_error_code = ["import-untyped", "import-not-found"]

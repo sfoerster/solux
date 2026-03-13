@@ -16,10 +16,10 @@ security reporting channel (or a private maintainer contact) and include:
 
 Security-sensitive components include:
 
-1. Web server/auth/webhook endpoints under `src/solus/serve/`.
-2. Workflow validation/execution under `src/solus/workflows/`.
-3. External module loading under `src/solus/modules/`.
-4. Queue/worker state handling under `src/solus/db.py` and `src/solus/worker.py`.
+1. Web server/auth/webhook endpoints under `src/solux/serve/`.
+2. Workflow validation/execution under `src/solux/workflows/`.
+3. External module loading under `src/solux/modules/`.
+4. Queue/worker state handling under `src/solux/db.py` and `src/solux/worker.py`.
 
 ## Hardening Expectations
 

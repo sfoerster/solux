@@ -21,8 +21,8 @@
 
 import os
 
-from solus.modules.spec import ConfigField, ContextKey, ModuleSpec
-from solus.workflows.models import Context, Step
+from solux.modules.spec import ConfigField, ContextKey, ModuleSpec
+from solux.workflows.models import Context, Step
 
 
 def handle(ctx: Context, step: Step) -> Context:

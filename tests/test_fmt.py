@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from solus.cli.fmt import _supports_color, bold, dim, green, red, yellow
+from solux.cli.fmt import _supports_color, bold, dim, green, red, yellow
 
 
 def test_no_color_env_disables_color(monkeypatch):

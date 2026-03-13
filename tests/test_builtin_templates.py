@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import yaml
 
-from solus.workflows.examples import TRIGGER_EXAMPLES, WORKFLOW_EXAMPLES
+from solux.workflows.examples import TRIGGER_EXAMPLES, WORKFLOW_EXAMPLES
 
 
 def _workflow_examples_by_name() -> dict[str, dict]:

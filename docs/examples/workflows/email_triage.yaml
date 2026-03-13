@@ -4,10 +4,10 @@
 # local LLM for classification and prioritization, posts the triage report
 # to Slack, and archives it in a local SQLite table.
 #
-# Emails are NOT marked as read in your mail client — Solus tracks which
+# Emails are NOT marked as read in your mail client — Solux tracks which
 # messages it has processed using its own trigger state database.
 #
-# Required environment variables (set in ~/.config/solus/.env):
+# Required environment variables (set in ~/.config/solux/.env):
 #   IMAP_HOST      — IMAP server (e.g. imap.gmail.com)
 #   IMAP_USER      — Your login email address
 #   IMAP_PASSWORD  — App password (NOT your account password)
@@ -17,7 +17,7 @@
 #   https://myaccount.google.com/apppasswords
 #
 # Trigger: see triggers.d/email_triage_cron.yaml (runs every 5 minutes)
-# Manual run: solus run --workflow email_triage email_triage
+# Manual run: solux run --workflow email_triage email_triage
 # Set `limit: 0` below to process all unread messages.
 
 name: email_triage

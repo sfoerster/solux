@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from solus.cli import parse_args
-from solus.cli.run import _generic_failure_hint, _step_progress_callback
+from solux.cli import parse_args
+from solux.cli.run import _generic_failure_hint, _step_progress_callback
 
 
 # ---------------------------------------------------------------------------
@@ -33,17 +33,17 @@ def test_generic_failure_hint_ollama_keyword():
 
 
 def test_generic_failure_hint_config_not_found():
-    exc = RuntimeError("config not found at ~/.config/solus/config.toml")
+    exc = RuntimeError("config not found at ~/.config/solux/config.toml")
     hint = _generic_failure_hint(exc)
     assert hint is not None
-    assert "solus init" in hint
+    assert "solux init" in hint
 
 
 def test_generic_failure_hint_config_missing():
     exc = RuntimeError("config missing, please create one")
     hint = _generic_failure_hint(exc)
     assert hint is not None
-    assert "solus init" in hint
+    assert "solux init" in hint
 
 
 def test_generic_failure_hint_unrelated_error():
@@ -58,7 +58,7 @@ def test_generic_failure_hint_unrelated_error():
 
 
 def test_step_progress_callback_prints_to_stderr(capsys):
-    from solus.workflows.models import Context
+    from solux.workflows.models import Context
 
     cb = _step_progress_callback()
     ctx = Context(source="test", source_id="abc", data={}, config=None, logger=None, params={})  # type: ignore[arg-type]
@@ -75,7 +75,7 @@ def test_step_progress_callback_prints_to_stderr(capsys):
 
 
 def test_step_progress_callback_without_timings(capsys):
-    from solus.workflows.models import Context
+    from solux.workflows.models import Context
 
     cb = _step_progress_callback()
     ctx = Context(source="test", source_id="abc", data={}, config=None, logger=None, params={})  # type: ignore[arg-type]
@@ -92,10 +92,10 @@ def test_step_progress_callback_without_timings(capsys):
 
 
 def test_print_dry_run_shows_arrows(capsys):
-    from solus.cli.run import _print_dry_run
-    from solus.workflows.models import Step, Workflow
-    from solus.workflows.registry import StepRegistry
-    from solus.workflows.validation import ValidationResult
+    from solux.cli.run import _print_dry_run
+    from solux.workflows.models import Step, Workflow
+    from solux.workflows.registry import StepRegistry
+    from solux.workflows.validation import ValidationResult
 
     wf = Workflow(
         name="test_wf",
@@ -119,11 +119,11 @@ def test_print_dry_run_shows_arrows(capsys):
 
 
 def test_print_dry_run_shows_reads_writes(capsys):
-    from solus.cli.run import _print_dry_run
-    from solus.modules.spec import ContextKey, ModuleSpec
-    from solus.workflows.models import Step, Workflow
-    from solus.workflows.registry import StepRegistry
-    from solus.workflows.validation import ValidationResult
+    from solux.cli.run import _print_dry_run
+    from solux.modules.spec import ContextKey, ModuleSpec
+    from solux.workflows.models import Step, Workflow
+    from solux.workflows.registry import StepRegistry
+    from solux.workflows.validation import ValidationResult
 
     registry = StepRegistry()
     registry.register(
@@ -155,10 +155,10 @@ def test_print_dry_run_shows_reads_writes(capsys):
 
 
 def test_print_dry_run_single_step_no_arrows(capsys):
-    from solus.cli.run import _print_dry_run
-    from solus.workflows.models import Step, Workflow
-    from solus.workflows.registry import StepRegistry
-    from solus.workflows.validation import ValidationResult
+    from solux.cli.run import _print_dry_run
+    from solux.workflows.models import Step, Workflow
+    from solux.workflows.registry import StepRegistry
+    from solux.workflows.validation import ValidationResult
 
     wf = Workflow(
         name="single",
@@ -213,7 +213,7 @@ def test_parse_args_doctor_fix_and_all():
 
 
 def test_main_dispatches_init(monkeypatch):
-    from solus.cli import main
+    from solux.cli import main
 
     called = {"init": False}
 
@@ -221,14 +221,14 @@ def test_main_dispatches_init(monkeypatch):
         called["init"] = True
         return 0
 
-    monkeypatch.setattr("solus.cli.cmd_init", _fake_init)
+    monkeypatch.setattr("solux.cli.cmd_init", _fake_init)
     ret = main(["init"])
     assert ret == 0
     assert called["init"]
 
 
 def test_main_dispatches_examples(monkeypatch, capsys):
-    from solus.cli import main
+    from solux.cli import main
 
     called = {"examples": False}
 
@@ -236,7 +236,7 @@ def test_main_dispatches_examples(monkeypatch, capsys):
         called["examples"] = True
         return 0
 
-    monkeypatch.setattr("solus.cli.cmd_workflows_examples", _fake_examples)
+    monkeypatch.setattr("solux.cli.cmd_workflows_examples", _fake_examples)
     ret = main(["examples"])
     assert ret == 0
     assert called["examples"]
@@ -249,13 +249,13 @@ def test_main_dispatches_examples(monkeypatch, capsys):
 
 def test_process_source_passes_on_step_complete(monkeypatch):
     """Verify process_source forwards on_step_complete to execute_source_workflow."""
-    from solus.pipeline import process_source
+    from solux.pipeline import process_source
 
     captured_kwargs: dict = {}
 
     def _fake_execute(config, *, source, workflow_name, params, no_cache, verbose, progress, on_step_complete=None):
         captured_kwargs["on_step_complete"] = on_step_complete
-        from solus.workflows.models import Context
+        from solux.workflows.models import Context
 
         return Context(
             source=source,
@@ -273,7 +273,7 @@ def test_process_source_passes_on_step_complete(monkeypatch):
             params={},
         )
 
-    monkeypatch.setattr("solus.pipeline.execute_source_workflow", _fake_execute)
+    monkeypatch.setattr("solux.pipeline.execute_source_workflow", _fake_execute)
 
     sentinel = object()
     result = process_source(
@@ -292,8 +292,8 @@ def test_process_source_passes_on_step_complete(monkeypatch):
 
 def test_execute_source_workflow_passes_on_step_complete(monkeypatch):
     """Verify execute_source_workflow forwards on_step_complete to execute_workflow."""
-    from solus.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
-    from solus.pipeline import execute_source_workflow
+    from solux.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
+    from solux.pipeline import execute_source_workflow
 
     captured_kwargs: dict = {}
 
@@ -301,7 +301,7 @@ def test_execute_source_workflow_passes_on_step_complete(monkeypatch):
         captured_kwargs["on_step_complete"] = on_step_complete
         return ctx
 
-    monkeypatch.setattr("solus.pipeline.execute_workflow", _fake_execute_workflow)
+    monkeypatch.setattr("solux.pipeline.execute_workflow", _fake_execute_workflow)
 
     tmp = Path("/tmp/test_esw")
     cfg = Config(
@@ -334,7 +334,7 @@ def test_doctor_print_ok_is_colored_with_force_color(monkeypatch, capsys):
     """Verify _print uses green [OK] when color is forced."""
     monkeypatch.delenv("NO_COLOR", raising=False)
     monkeypatch.setenv("FORCE_COLOR", "1")
-    from solus.doctor import _print
+    from solux.doctor import _print
 
     _print("OK", "test message")
     captured = capsys.readouterr()
@@ -346,7 +346,7 @@ def test_doctor_print_warn_is_colored_with_force_color(monkeypatch, capsys):
     """Verify _print uses red [!!] when color is forced."""
     monkeypatch.delenv("NO_COLOR", raising=False)
     monkeypatch.setenv("FORCE_COLOR", "1")
-    from solus.doctor import _print
+    from solux.doctor import _print
 
     _print("WARN", "bad thing")
     captured = capsys.readouterr()
@@ -357,7 +357,7 @@ def test_doctor_print_fix_shows_bold_prefix(monkeypatch, capsys):
     """Verify _print with fix=True uses bold 'Fix:' prefix."""
     monkeypatch.delenv("NO_COLOR", raising=False)
     monkeypatch.setenv("FORCE_COLOR", "1")
-    from solus.doctor import _print
+    from solux.doctor import _print
 
     _print("WARN", "missing tool", "install it", fix=True)
     captured = capsys.readouterr()
@@ -368,7 +368,7 @@ def test_doctor_print_fix_shows_bold_prefix(monkeypatch, capsys):
 def test_doctor_print_no_fix_shows_arrow(monkeypatch, capsys):
     """Verify _print with fix=False uses -> prefix."""
     monkeypatch.setenv("NO_COLOR", "1")
-    from solus.doctor import _print
+    from solux.doctor import _print
 
     _print("WARN", "missing tool", "install it", fix=False)
     captured = capsys.readouterr()
@@ -383,19 +383,19 @@ def test_doctor_print_no_fix_shows_arrow(monkeypatch, capsys):
 
 def test_run_generic_hint_on_connection_refused(monkeypatch, capsys):
     """cmd_run prints generic Ollama hint when execute_source_workflow raises connection error."""
-    from solus.cli import main
+    from solux.cli import main
 
     class _Config:
         config_path = Path("/tmp/config.toml")
         security = type("S", (), {"strict_env_vars": False, "mode": "trusted"})()
         ui = type("U", (), {"default_workflow": "webpage_summary"})()
 
-    monkeypatch.setattr("solus.cli.run.load_config", lambda: _Config())
+    monkeypatch.setattr("solux.cli.run.load_config", lambda: _Config())
 
     def _raise(**_kwargs):
         raise RuntimeError("Connection refused to http://localhost:11434")
 
-    monkeypatch.setattr("solus.cli.run.execute_source_workflow", _raise)
+    monkeypatch.setattr("solux.cli.run.execute_source_workflow", _raise)
 
     rc = main(["run", "--workflow", "webpage_summary", "https://example.com", "--quiet-progress"])
     captured = capsys.readouterr()

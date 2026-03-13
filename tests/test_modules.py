@@ -5,9 +5,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from solus.modules.discovery import discover_modules
-from solus.modules.spec import ModuleSpec
-from solus.workflows.registry import StepRegistry, global_registry
+from solux.modules.discovery import discover_modules
+from solux.modules.spec import ModuleSpec
+from solux.workflows.registry import StepRegistry, global_registry
 
 
 def test_discover_modules_returns_all_builtin() -> None:
@@ -252,7 +252,7 @@ def test_discovery_importable_from_clean_process() -> None:
     existing = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{src_dir}:{existing}" if existing else str(src_dir)
     proc = subprocess.run(
-        [sys.executable, "-c", "import solus.modules.discovery"],
+        [sys.executable, "-c", "import solux.modules.discovery"],
         capture_output=True,
         text=True,
         check=False,

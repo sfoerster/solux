@@ -13,11 +13,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.workflows.models import Context, Step
+from solux.workflows.models import Context, Step
 
 
 def _make_ctx(data: dict | None = None, source: str = "test-source") -> Context:
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -56,7 +56,7 @@ def _make_step(step_type: str, config: dict | None = None) -> Step:
 
 
 def test_vinsium_node_module_spec() -> None:
-    from solus.modules.output.vinsium_node import MODULE
+    from solux.modules.output.vinsium_node import MODULE
 
     assert MODULE.name == "vinsium_node"
     assert MODULE.category == "output"
@@ -67,7 +67,7 @@ def test_vinsium_node_module_spec() -> None:
 
 
 def test_vinsium_node_missing_url_raises() -> None:
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step("output.vinsium_node")
@@ -76,7 +76,7 @@ def test_vinsium_node_missing_url_raises() -> None:
 
 
 def test_vinsium_node_missing_workflow_raises() -> None:
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step("output.vinsium_node", {"node_url": "https://example.com"})
@@ -85,7 +85,7 @@ def test_vinsium_node_missing_workflow_raises() -> None:
 
 
 def test_vinsium_node_posts_to_endpoint() -> None:
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"output_text": "Test content"})
     step = _make_step(
@@ -99,7 +99,7 @@ def test_vinsium_node_posts_to_endpoint() -> None:
     mock_resp = MagicMock()
     mock_resp.status_code = 200
     mock_resp.json.return_value = {"job_id": "remote-job-123", "status": "queued"}
-    with patch("solus.modules.output.vinsium_node.requests.post", return_value=mock_resp) as mock_post:
+    with patch("solux.modules.output.vinsium_node.requests.post", return_value=mock_resp) as mock_post:
         result = handle(ctx, step)
     assert result.data["vinsium_response_status"] == 200
     assert result.data["vinsium_job_id"] == "remote-job-123"
@@ -110,7 +110,7 @@ def test_vinsium_node_posts_to_endpoint() -> None:
 
 def test_vinsium_node_env_interpolation() -> None:
     import os
-    from solus.modules._helpers import interpolate_env
+    from solux.modules._helpers import interpolate_env
 
     os.environ["VINSIUM_TOKEN"] = "secret-token"
     result = interpolate_env("${env:VINSIUM_TOKEN}")
@@ -120,7 +120,7 @@ def test_vinsium_node_env_interpolation() -> None:
 
 def test_vinsium_node_request_failure_raises() -> None:
     import requests as req
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step(
@@ -131,14 +131,14 @@ def test_vinsium_node_request_failure_raises() -> None:
         },
     )
     with patch(
-        "solus.modules.output.vinsium_node.requests.post", side_effect=req.RequestException("Connection refused")
+        "solux.modules.output.vinsium_node.requests.post", side_effect=req.RequestException("Connection refused")
     ):
         with pytest.raises(RuntimeError, match="request"):
             handle(ctx, step)
 
 
 def test_vinsium_node_custom_input_key() -> None:
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"my_result": "Custom content"})
     step = _make_step(
@@ -152,14 +152,14 @@ def test_vinsium_node_custom_input_key() -> None:
     mock_resp = MagicMock()
     mock_resp.status_code = 201
     mock_resp.json.return_value = {"job_id": "j1"}
-    with patch("solus.modules.output.vinsium_node.requests.post", return_value=mock_resp) as mock_post:
+    with patch("solux.modules.output.vinsium_node.requests.post", return_value=mock_resp) as mock_post:
         result = handle(ctx, step)
     posted_json = mock_post.call_args[1]["json"]
     assert posted_json["text"] == "Custom content"
 
 
 def test_vinsium_node_raises_on_non_2xx_by_default() -> None:
-    from solus.modules.output.vinsium_node import handle
+    from solux.modules.output.vinsium_node import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step(
@@ -175,7 +175,7 @@ def test_vinsium_node_raises_on_non_2xx_by_default() -> None:
     mock_resp.text = "bad gateway"
     mock_resp.json.return_value = {}
 
-    with patch("solus.modules.output.vinsium_node.requests.post", return_value=mock_resp):
+    with patch("solux.modules.output.vinsium_node.requests.post", return_value=mock_resp):
         with pytest.raises(RuntimeError, match="server returned 502"):
             handle(ctx, step)
 
@@ -184,7 +184,7 @@ def test_vinsium_node_raises_on_non_2xx_by_default() -> None:
 
 
 def test_oidc_validator_import() -> None:
-    from solus.serve.auth import OIDCValidator, get_validator
+    from solux.serve.auth import OIDCValidator, get_validator
 
     assert OIDCValidator is not None
     assert get_validator is not None
@@ -192,7 +192,7 @@ def test_oidc_validator_import() -> None:
 
 def test_oidc_validator_no_pyjwt() -> None:
     """Should return None when PyJWT not installed."""
-    from solus.serve.auth import OIDCValidator
+    from solux.serve.auth import OIDCValidator
     import sys
 
     validator = OIDCValidator("https://example.com", "myapp")
@@ -202,7 +202,7 @@ def test_oidc_validator_no_pyjwt() -> None:
 
 
 def test_oidc_validator_invalid_token() -> None:
-    from solus.serve.auth import OIDCValidator
+    from solux.serve.auth import OIDCValidator
 
     validator = OIDCValidator("https://example.com", "myapp")
     # Will fail because the token is invalid and issuer doesn't exist
@@ -211,7 +211,7 @@ def test_oidc_validator_invalid_token() -> None:
 
 
 def test_get_validator_caches() -> None:
-    from solus.serve.auth import get_validator
+    from solux.serve.auth import get_validator
 
     v1 = get_validator("https://example.com", "aud1")
     v2 = get_validator("https://example.com", "aud1")
@@ -219,7 +219,7 @@ def test_get_validator_caches() -> None:
 
 
 def test_get_validator_different_configs() -> None:
-    from solus.serve.auth import get_validator
+    from solux.serve.auth import get_validator
 
     v1 = get_validator("https://example1.com", "aud1")
     v2 = get_validator("https://example2.com", "aud1")
@@ -227,7 +227,7 @@ def test_get_validator_different_configs() -> None:
 
 
 def test_get_validator_different_algorithms() -> None:
-    from solus.serve.auth import get_validator
+    from solux.serve.auth import get_validator
 
     v1 = get_validator("https://example.com", "aud", allowed_algorithms=("RS256",))
     v2 = get_validator("https://example.com", "aud", allowed_algorithms=("PS256",))
@@ -235,7 +235,7 @@ def test_get_validator_different_algorithms() -> None:
 
 
 def test_oidc_validator_reuses_jwks_client_instance() -> None:
-    from solus.serve.auth import OIDCValidator
+    from solux.serve.auth import OIDCValidator
 
     calls = {"init": 0}
 
@@ -259,7 +259,7 @@ def test_oidc_validator_reuses_jwks_client_instance() -> None:
 
 
 def test_oidc_validator_refreshes_jwks_client_after_failure() -> None:
-    from solus.serve.auth import OIDCValidator
+    from solux.serve.auth import OIDCValidator
 
     state = {"init": 0}
 
@@ -289,7 +289,7 @@ def test_oidc_validator_refreshes_jwks_client_after_failure() -> None:
 
 
 def test_security_config_oidc_defaults() -> None:
-    from solus.config import SecurityConfig
+    from solux.config import SecurityConfig
 
     sc = SecurityConfig()
     assert sc.oidc_issuer == ""
@@ -299,7 +299,7 @@ def test_security_config_oidc_defaults() -> None:
 
 
 def test_security_config_oidc_fields() -> None:
-    from solus.config import SecurityConfig
+    from solux.config import SecurityConfig
 
     sc = SecurityConfig(
         oidc_issuer="https://my-idp.example.com",
@@ -314,24 +314,24 @@ def test_security_config_oidc_fields() -> None:
 
 
 def test_load_config_oidc_fields(tmp_path: Path) -> None:
-    from solus.config import load_config
+    from solux.config import load_config
 
     config_file = tmp_path / "config.toml"
     config_file.write_text(
         '[security]\nmode = "trusted"\noidc_issuer = "https://idp.example.com"\n'
-        'oidc_audience = "solus"\noidc_require_auth = true\n'
+        'oidc_audience = "solux"\noidc_require_auth = true\n'
         'oidc_allowed_algs = ["RS256", "PS256"]\n',
         encoding="utf-8",
     )
     config = load_config(config_file)
     assert config.security.oidc_issuer == "https://idp.example.com"
-    assert config.security.oidc_audience == "solus"
+    assert config.security.oidc_audience == "solux"
     assert config.security.oidc_require_auth is True
     assert config.security.oidc_allowed_algs == ("RS256", "PS256")
 
 
 def test_load_config_oidc_require_auth_without_audience_fails(tmp_path: Path) -> None:
-    from solus.config import ConfigError, load_config
+    from solux.config import ConfigError, load_config
 
     config_file = tmp_path / "config.toml"
     config_file.write_text(
@@ -346,8 +346,8 @@ def test_load_config_oidc_require_auth_without_audience_fails(tmp_path: Path) ->
 
 
 def test_handler_check_auth_oidc_required_no_token(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(
@@ -368,8 +368,8 @@ def test_handler_check_auth_oidc_required_no_token(tmp_path: Path) -> None:
 
 
 def test_handler_check_auth_oidc_required_missing_issuer_fails_closed(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(
@@ -390,8 +390,8 @@ def test_handler_check_auth_oidc_required_missing_issuer_fails_closed(tmp_path: 
 
 
 def test_handler_check_auth_oidc_required_missing_audience_fails_closed(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(
@@ -412,9 +412,9 @@ def test_handler_check_auth_oidc_required_missing_audience_fails_closed(tmp_path
 
 
 def test_handler_check_auth_oidc_required_valid_token(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
-    from solus.serve import auth
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
+    from solux.serve import auth
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(
@@ -431,7 +431,7 @@ def test_handler_check_auth_oidc_required_valid_token(tmp_path: Path) -> None:
 
     mock_validator = MagicMock()
     mock_validator.validate.return_value = {"sub": "user123", "aud": "test"}
-    with patch("solus.serve.auth.get_validator", return_value=mock_validator):
+    with patch("solux.serve.auth.get_validator", return_value=mock_validator):
         result = handler._check_auth()
     assert result is not None
     assert isinstance(result, dict)
@@ -444,7 +444,7 @@ def test_helpers_module_imports_cleanly_in_fresh_process() -> None:
     existing_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{src_path}:{existing_pythonpath}" if existing_pythonpath else src_path
     proc = subprocess.run(
-        [sys.executable, "-c", "import solus.modules._helpers"],
+        [sys.executable, "-c", "import solux.modules._helpers"],
         env=env,
         capture_output=True,
         text=True,
@@ -454,8 +454,8 @@ def test_helpers_module_imports_cleanly_in_fresh_process() -> None:
 
 
 def test_handler_events_route_requires_auth_when_oidc_enabled(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(
@@ -485,7 +485,7 @@ def test_secrets_in_workflow_step_config() -> None:
     """Test that ${env:VAR} is interpolated in step configs during workflow loading."""
     import os
     import yaml
-    from solus.workflows.loader import _parse_workflow
+    from solux.workflows.loader import _parse_workflow
 
     os.environ["TEST_WEBHOOK_URL"] = "https://hooks.slack.com/real-url"
     raw = yaml.safe_load("""
@@ -505,7 +505,7 @@ steps:
 def test_secrets_missing_env_in_config() -> None:
     """Missing env vars should become empty strings."""
     import yaml
-    from solus.workflows.loader import _parse_workflow
+    from solux.workflows.loader import _parse_workflow
 
     raw = yaml.safe_load("""
 name: test_missing_secret

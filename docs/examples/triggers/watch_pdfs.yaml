@@ -1,6 +1,6 @@
 # Use Case 3 — Watch Downloads folder for new PDF files
 #
-# Solus polls ~/Downloads every 15 seconds for new .pdf files.
+# Solux polls ~/Downloads every 15 seconds for new .pdf files.
 # Each new file is queued for the pdf_to_obsidian workflow.
 #
 # Adjust `path` if your PDFs land somewhere other than ~/Downloads.

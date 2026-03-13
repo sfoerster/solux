@@ -9,9 +9,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from solus.triggers.rss_poll import RssPollTrigger
-from solus.triggers.spec import Trigger
-from solus.triggers._state import _state_db, _is_seen
+from solux.triggers.rss_poll import RssPollTrigger
+from solux.triggers.spec import Trigger
+from solux.triggers._state import _state_db, _is_seen
 
 
 def _trigger(name="test_rss", url="http://example.com/feed.xml", interval=0.01, workflow="webpage_summary"):
@@ -76,7 +76,7 @@ class TestFetchItems:
         state_path = tmp_path / "state.db"
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
-        with patch("solus.modules._helpers.fetch_with_redirect_guard", return_value=resp):
+        with patch("solux.modules._helpers.fetch_with_redirect_guard", return_value=resp):
             items = t._fetch_items("http://example.com/feed.xml")
 
         assert len(items) == 2
@@ -103,7 +103,7 @@ class TestFetchItems:
         state_path = tmp_path / "state.db"
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
-        with patch("solus.modules._helpers.fetch_with_redirect_guard", return_value=resp):
+        with patch("solux.modules._helpers.fetch_with_redirect_guard", return_value=resp):
             items = t._fetch_items("http://example.com/feed.xml")
 
         assert len(items) == 2
@@ -127,7 +127,7 @@ class TestFetchItems:
         state_path = tmp_path / "state.db"
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
-        with patch("solus.modules._helpers.fetch_with_redirect_guard", return_value=resp):
+        with patch("solux.modules._helpers.fetch_with_redirect_guard", return_value=resp):
             items = t._fetch_items("http://example.com/feed.xml")
 
         assert len(items) == 1
@@ -142,7 +142,7 @@ class TestFetchItems:
         state_path = tmp_path / "state.db"
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
-        with patch("solus.modules._helpers.fetch_with_redirect_guard", return_value=resp):
+        with patch("solux.modules._helpers.fetch_with_redirect_guard", return_value=resp):
             items = t._fetch_items("http://example.com/feed.xml")
 
         assert items == []
@@ -153,7 +153,7 @@ class TestFetchItems:
         state_path = tmp_path / "state.db"
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
-        with patch("solus.modules._helpers.fetch_with_redirect_guard", side_effect=Exception("network error")):
+        with patch("solux.modules._helpers.fetch_with_redirect_guard", side_effect=Exception("network error")):
             items = t._fetch_items("http://example.com/feed.xml")
 
         assert items == []
@@ -200,8 +200,8 @@ class TestRssPollRun:
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
         with (
-            patch("solus.modules._helpers.fetch_with_redirect_guard", side_effect=controlled_fetch),
-            patch("solus.triggers.rss_poll.enqueue_jobs", side_effect=fake_enqueue),
+            patch("solux.modules._helpers.fetch_with_redirect_guard", side_effect=controlled_fetch),
+            patch("solux.triggers.rss_poll.enqueue_jobs", side_effect=fake_enqueue),
         ):
             t.run()
 
@@ -247,8 +247,8 @@ class TestRssPollRun:
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
         with (
-            patch("solus.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
-            patch("solus.triggers.rss_poll.enqueue_jobs", side_effect=lambda **kw: enqueued.append(1)),
+            patch("solux.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
+            patch("solux.triggers.rss_poll.enqueue_jobs", side_effect=lambda **kw: enqueued.append(1)),
         ):
             t.run()
 
@@ -270,8 +270,8 @@ class TestRssPollRun:
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
         with (
-            patch("solus.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
-            patch("solus.triggers.rss_poll.enqueue_jobs", side_effect=RuntimeError("db locked")),
+            patch("solux.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
+            patch("solux.triggers.rss_poll.enqueue_jobs", side_effect=RuntimeError("db locked")),
         ):
             # Should not raise despite enqueue failure
             t.run()
@@ -297,8 +297,8 @@ class TestRssPollRun:
         t = RssPollTrigger(trigger, tmp_path, state_path, stop)
 
         with (
-            patch("solus.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
-            patch("solus.triggers.rss_poll.enqueue_jobs", side_effect=capture_enqueue),
+            patch("solux.modules._helpers.fetch_with_redirect_guard", side_effect=stop_after_one),
+            patch("solux.triggers.rss_poll.enqueue_jobs", side_effect=capture_enqueue),
         ):
             t.run()
 

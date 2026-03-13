@@ -12,8 +12,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.serve.api import handle_list_workflows, handle_save_workflow, handle_trigger_webhook
-from solus.serve.templates import (
+from solux.serve.api import handle_list_workflows, handle_save_workflow, handle_trigger_webhook
+from solux.serve.templates import (
     build_examples_page,
     build_history_page,
     build_modules_page,
@@ -36,7 +36,7 @@ def test_build_workflows_page_empty() -> None:
 
 
 def test_build_workflows_page_with_workflows() -> None:
-    from solus.workflows.models import Step, Workflow
+    from solux.workflows.models import Step, Workflow
 
     wf = Workflow(
         name="my_workflow",
@@ -107,7 +107,7 @@ def test_build_modules_page_empty() -> None:
 
 
 def test_build_modules_page_with_spec() -> None:
-    from solus.modules.spec import ModuleSpec, ContextKey
+    from solux.modules.spec import ModuleSpec, ContextKey
 
     def dummy(ctx, step):
         return ctx
@@ -178,7 +178,7 @@ def test_build_history_page_dead_letter() -> None:
 
 
 def test_build_page_shows_dead_letter_count() -> None:
-    from solus.serve.templates import build_page
+    from solux.serve.templates import build_page
 
     page = build_page(
         entries=[],
@@ -200,7 +200,7 @@ def test_build_page_shows_dead_letter_count() -> None:
     assert "Configured triggers" in page
     assert "webpage_summary" in page
     assert "daily_briefing_cron" in page
-    assert 'data-active=true aria-current="page">Solus' in page
+    assert 'data-active=true aria-current="page">Solux' in page
 
 
 def test_build_sse_script() -> None:
@@ -267,12 +267,12 @@ def test_handle_trigger_webhook_queues_job(tmp_path: Path) -> None:
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
     mock_wf = MagicMock()
-    with patch("solus.workflows.loader.load_workflow", return_value=mock_wf):
-        with patch("solus.workflows.registry.build_registry") as mock_registry:
+    with patch("solux.workflows.loader.load_workflow", return_value=mock_wf):
+        with patch("solux.workflows.registry.build_registry") as mock_registry:
             mock_registry.return_value = MagicMock()
-            with patch("solus.workflows.validation.validate_workflow") as mock_validate:
+            with patch("solux.workflows.validation.validate_workflow") as mock_validate:
                 mock_validate.return_value = MagicMock(valid=True, issues=[])
-                with patch("solus.serve.api.enqueue_jobs", return_value=[{"job_id": "test-job-1"}]):
+                with patch("solux.serve.api.enqueue_jobs", return_value=[{"job_id": "test-job-1"}]):
                     ok, result = handle_trigger_webhook(cache_dir, "my_workflow", {"param": "value"})
     assert ok is True
     assert result["job_id"] == "test-job-1"
@@ -289,7 +289,7 @@ def test_handle_trigger_webhook_uses_explicit_workflows_dir(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    with patch("solus.serve.api.enqueue_jobs", return_value=[{"job_id": "job-42"}]):
+    with patch("solux.serve.api.enqueue_jobs", return_value=[{"job_id": "job-42"}]):
         ok, result = handle_trigger_webhook(
             cache_dir,
             "my_flow",
@@ -306,9 +306,9 @@ def test_handle_trigger_webhook_rejects_security_invalid_workflow(tmp_path: Path
     mock_wf = MagicMock()
     mock_cfg = MagicMock()
     mock_cfg.security.mode = "untrusted"
-    with patch("solus.workflows.loader.load_workflow", return_value=mock_wf):
-        with patch("solus.serve.api.enqueue_jobs", return_value=[{"job_id": "test-job-1"}]):
-            with patch("solus.workflows.validation.validate_workflow") as mock_validate:
+    with patch("solux.workflows.loader.load_workflow", return_value=mock_wf):
+        with patch("solux.serve.api.enqueue_jobs", return_value=[{"job_id": "test-job-1"}]):
+            with patch("solux.workflows.validation.validate_workflow") as mock_validate:
                 mock_validate.return_value = MagicMock(
                     valid=False,
                     issues=[MagicMock(level="error", message="blocked in untrusted mode")],
@@ -324,10 +324,10 @@ def test_handle_trigger_webhook_rejects_security_invalid_workflow(tmp_path: Path
 
 
 def test_handle_trigger_webhook_invalid_workflow(tmp_path: Path) -> None:
-    from solus.workflows.loader import WorkflowLoadError
+    from solux.workflows.loader import WorkflowLoadError
 
     cache_dir = tmp_path / "cache"
-    with patch("solus.workflows.loader.load_workflow", side_effect=WorkflowLoadError("not found")):
+    with patch("solux.workflows.loader.load_workflow", side_effect=WorkflowLoadError("not found")):
         ok, result = handle_trigger_webhook(cache_dir, "no_workflow", {})
     assert ok is False
 
@@ -345,10 +345,10 @@ def test_handle_trigger_webhook_rejects_non_scalar_source(tmp_path: Path) -> Non
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
     mock_wf = MagicMock()
-    with patch("solus.workflows.loader.load_workflow", return_value=mock_wf):
-        with patch("solus.workflows.registry.build_registry") as mock_registry:
+    with patch("solux.workflows.loader.load_workflow", return_value=mock_wf):
+        with patch("solux.workflows.registry.build_registry") as mock_registry:
             mock_registry.return_value = MagicMock()
-            with patch("solus.workflows.validation.validate_workflow") as mock_validate:
+            with patch("solux.workflows.validation.validate_workflow") as mock_validate:
                 mock_validate.return_value = MagicMock(valid=True, issues=[])
                 ok, result = handle_trigger_webhook(
                     cache_dir,
@@ -363,7 +363,7 @@ def test_handle_trigger_webhook_rejects_non_scalar_source(tmp_path: Path) -> Non
 
 
 def test_handler_has_workflows_route(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None)
     # Check that the handler class has the necessary methods
@@ -377,7 +377,7 @@ def test_handler_has_workflows_route(tmp_path: Path) -> None:
 
 
 def test_handler_build_accepts_config(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     # Should not raise even when config is provided
     handler_class = build_handler(tmp_path, yt_dlp_binary=None, config=None)
@@ -385,7 +385,7 @@ def test_handler_build_accepts_config(tmp_path: Path) -> None:
 
 
 def test_handler_check_auth_no_config(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None, config=None)
     handler = handler_class.__new__(handler_class)
@@ -395,8 +395,8 @@ def test_handler_check_auth_no_config(tmp_path: Path) -> None:
 
 
 def test_handler_check_auth_oidc_not_required(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.config import SecurityConfig
+    from solux.serve.handler import build_handler
+    from solux.config import SecurityConfig
 
     mock_config = MagicMock()
     mock_config.security = SecurityConfig(oidc_require_auth=False)
@@ -408,8 +408,8 @@ def test_handler_check_auth_oidc_not_required(tmp_path: Path) -> None:
 
 
 def test_handler_modules_catalog_uses_configured_modules_dir(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
-    from solus.serve.handler import _SYNTHETIC_ADMIN_CLAIMS
+    from solux.serve.handler import build_handler
+    from solux.serve.handler import _SYNTHETIC_ADMIN_CLAIMS
 
     mock_config = MagicMock()
     mock_config.modules_dir = tmp_path / "custom-modules"
@@ -418,7 +418,7 @@ def test_handler_modules_catalog_uses_configured_modules_dir(tmp_path: Path) -> 
     handler._send_text = MagicMock()
     handler.headers = {}
 
-    with patch("solus.modules.discovery.discover_modules", return_value=[]) as mock_discover:
+    with patch("solux.modules.discovery.discover_modules", return_value=[]) as mock_discover:
         handler._handle_modules_catalog(dict(_SYNTHETIC_ADMIN_CLAIMS))
 
     mock_discover.assert_called_once_with(external_dir=mock_config.modules_dir)
@@ -426,7 +426,7 @@ def test_handler_modules_catalog_uses_configured_modules_dir(tmp_path: Path) -> 
 
 
 def test_handler_workflow_route_rejects_invalid_name(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None, config=None)
     handler = handler_class.__new__(handler_class)
@@ -440,7 +440,7 @@ def test_handler_workflow_route_rejects_invalid_name(tmp_path: Path) -> None:
 
 
 def test_handler_trigger_route_rejects_invalid_name(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None, config=None)
     handler = handler_class.__new__(handler_class)
@@ -516,11 +516,11 @@ def test_build_history_page_has_bulk_buttons() -> None:
 
 
 def test_handle_bulk_retry_failed(tmp_path: Path) -> None:
-    from solus.serve.api import handle_bulk_retry_failed
+    from solux.serve.api import handle_bulk_retry_failed
 
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
-    with patch("solus.serve.api.retry_failed_jobs", return_value=[{"job_id": "x"}]) as mock_retry:
+    with patch("solux.serve.api.retry_failed_jobs", return_value=[{"job_id": "x"}]) as mock_retry:
         ok, msg = handle_bulk_retry_failed(cache_dir)
     assert ok is True
     assert "1" in msg
@@ -528,11 +528,11 @@ def test_handle_bulk_retry_failed(tmp_path: Path) -> None:
 
 
 def test_handle_bulk_clear_dead_letter(tmp_path: Path) -> None:
-    from solus.serve.api import handle_bulk_clear_dead_letter
+    from solux.serve.api import handle_bulk_clear_dead_letter
 
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
-    with patch("solus.serve.api.prune_jobs", return_value={"removed": 3, "remaining": 0}) as mock_prune:
+    with patch("solux.serve.api.prune_jobs", return_value={"removed": 3, "remaining": 0}) as mock_prune:
         ok, msg = handle_bulk_clear_dead_letter(cache_dir)
     assert ok is True
     assert "3" in msg
@@ -545,7 +545,7 @@ def test_handle_bulk_clear_dead_letter(tmp_path: Path) -> None:
 
 
 def test_healthz_route_returns_json(tmp_path: Path) -> None:
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None)
     handler = handler_class.__new__(handler_class)
@@ -559,7 +559,7 @@ def test_healthz_route_returns_json(tmp_path: Path) -> None:
     handler._send_json = fake_send_json
 
     with patch(
-        "solus.queueing.db_queue_counts",
+        "solux.queueing.db_queue_counts",
         return_value={"pending": 1, "processing": 0, "done": 5, "failed": 0, "dead_letter": 0},
     ):
         handler._handle_healthz()
@@ -571,7 +571,7 @@ def test_healthz_route_returns_json(tmp_path: Path) -> None:
 
 def test_healthz_route_exists_before_auth(tmp_path: Path) -> None:
     """The /healthz route must be reachable without authentication."""
-    from solus.serve.handler import build_handler
+    from solux.serve.handler import build_handler
 
     handler_class = build_handler(tmp_path, yt_dlp_binary=None)
     handler = handler_class.__new__(handler_class)
@@ -584,7 +584,7 @@ def test_healthz_route_exists_before_auth(tmp_path: Path) -> None:
 
 
 def test_webhook_rate_limiter_allows_within_limit() -> None:
-    from solus.serve.handler import _WebhookRateLimiter
+    from solux.serve.handler import _WebhookRateLimiter
 
     rl = _WebhookRateLimiter(max_per_minute=3)
     assert rl.allow("1.2.3.4") is True
@@ -594,7 +594,7 @@ def test_webhook_rate_limiter_allows_within_limit() -> None:
 
 
 def test_webhook_rate_limiter_independent_per_ip() -> None:
-    from solus.serve.handler import _WebhookRateLimiter
+    from solux.serve.handler import _WebhookRateLimiter
 
     rl = _WebhookRateLimiter(max_per_minute=1)
     assert rl.allow("1.1.1.1") is True
@@ -604,10 +604,10 @@ def test_webhook_rate_limiter_independent_per_ip() -> None:
 
 
 def test_webhook_rate_limiter_compacts_stale_ips(monkeypatch) -> None:
-    from solus.serve.handler import _WebhookRateLimiter
+    from solux.serve.handler import _WebhookRateLimiter
 
     now = {"t": 1000.0}
-    monkeypatch.setattr("solus.serve.handler.time.monotonic", lambda: now["t"])
+    monkeypatch.setattr("solux.serve.handler.time.monotonic", lambda: now["t"])
 
     rl = _WebhookRateLimiter(max_per_minute=2)
     assert rl.allow("1.1.1.1") is True
@@ -619,7 +619,7 @@ def test_webhook_rate_limiter_compacts_stale_ips(monkeypatch) -> None:
 
 
 def test_webhook_rate_limiter_bounds_tracked_ips() -> None:
-    from solus.serve.handler import _WebhookRateLimiter
+    from solux.serve.handler import _WebhookRateLimiter
 
     rl = _WebhookRateLimiter(max_per_minute=1, max_tracked_ips=3)
     for idx in range(10):

@@ -1,6 +1,6 @@
 # Contributor IP Policy
 
-This document defines contribution provenance expectations for Solus.
+This document defines contribution provenance expectations for Solux.
 
 ## Goals
 

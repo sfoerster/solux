@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.modules.ai.llm_prompt import handle
-from solus.workflows.models import Context, Step
+from solux.modules.ai.llm_prompt import handle
+from solux.workflows.models import Context, Step
 
 
 def _make_context(data: dict | None = None, params: dict | None = None) -> Context:
@@ -25,7 +25,7 @@ def _make_step(config: dict | None = None) -> Step:
     return Step(name="prompt", type="ai.llm_prompt", config=config or {})
 
 
-@patch("solus.modules.ai.llm_prompt.call_ollama_chat")
+@patch("solux.modules.ai.llm_prompt.call_ollama_chat")
 def test_handle_basic_prompt(mock_chat) -> None:
     mock_chat.return_value = "The answer is 42."
     ctx = _make_context(data={"input_text": "What is the meaning of life?"})
@@ -42,7 +42,7 @@ def test_handle_basic_prompt(mock_chat) -> None:
     assert result.data["output_text"] == "The answer is 42."
 
 
-@patch("solus.modules.ai.llm_prompt.call_ollama_chat")
+@patch("solux.modules.ai.llm_prompt.call_ollama_chat")
 def test_handle_template_substitution(mock_chat) -> None:
     mock_chat.return_value = "tech"
     ctx = _make_context(
@@ -83,7 +83,7 @@ def test_handle_missing_template_var_raises() -> None:
         handle(ctx, step)
 
 
-@patch("solus.modules.ai.llm_prompt.call_ollama_chat")
+@patch("solux.modules.ai.llm_prompt.call_ollama_chat")
 def test_handle_defaults(mock_chat) -> None:
     mock_chat.return_value = "response"
     ctx = _make_context(data={"input_text": "hello world"})
@@ -99,7 +99,7 @@ def test_handle_defaults(mock_chat) -> None:
     assert result.data["output_text"] == "response"
 
 
-@patch("solus.modules.ai.llm_prompt.call_ollama_chat")
+@patch("solux.modules.ai.llm_prompt.call_ollama_chat")
 def test_handle_model_override(mock_chat) -> None:
     mock_chat.return_value = "response"
     ctx = _make_context(

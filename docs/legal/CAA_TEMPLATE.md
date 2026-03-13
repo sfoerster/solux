@@ -12,7 +12,7 @@ Between:
 
 ## 1. Definitions
 
-1. "Project" means the software project known as `solus` and related documentation.
+1. "Project" means the software project known as `solux` and related documentation.
 2. "Contribution" means any code, documentation, or other material intentionally submitted by Contributor for inclusion in the Project.
 3. "Assigned Rights" means all right, title, and interest in and to the Contribution, including copyrights and related rights.
 

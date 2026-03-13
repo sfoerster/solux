@@ -8,6 +8,6 @@ echo "Running Ruff lint checks..."
 ruff check src/ tests/
 
 echo "Running mypy type checks..."
-mypy src/solus/
+mypy src/solux/
 
 echo "All pre-commit checks passed."

@@ -2,6 +2,6 @@
 * @sfoerster
 
 # Security-sensitive areas
-src/solus/serve/ @sfoerster
-src/solus/workflows/ @sfoerster
-src/solus/modules/ @sfoerster
+src/solux/serve/ @sfoerster
+src/solux/workflows/ @sfoerster
+src/solux/modules/ @sfoerster

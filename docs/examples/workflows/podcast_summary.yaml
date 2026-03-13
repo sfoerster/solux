@@ -6,9 +6,9 @@
 # file and optionally to an Obsidian vault.
 #
 # Usage:
-#   solus run --workflow podcast_summary "https://youtube.com/watch?v=..."
-#   solus run --workflow podcast_summary episode.mp3 --mode tldr
-#   solus ingest ~/Downloads/Podcasts/*.mp3 --workflow podcast_summary
+#   solux run --workflow podcast_summary "https://youtube.com/watch?v=..."
+#   solux run --workflow podcast_summary episode.mp3 --mode tldr
+#   solux ingest ~/Downloads/Podcasts/*.mp3 --workflow podcast_summary
 #
 # Trigger: see triggers.d/watch_audio.yaml
 

@@ -10,15 +10,15 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from solus.workflows.engine import (
+from solux.workflows.engine import (
     StepTimeoutError,
     _evaluate_when_for_step,
     _enforce_step_safety,
     execute_workflow,
 )
-from solus.workflows.models import Context, ContextKeys, Step, Workflow
-from solus.workflows.registry import StepRegistry
-from solus.modules.spec import ModuleSpec, ContextKey
+from solux.workflows.models import Context, ContextKeys, Step, Workflow
+from solux.workflows.registry import StepRegistry
+from solux.modules.spec import ModuleSpec, ContextKey
 
 
 def _make_config(mode: str = "trusted") -> MagicMock:

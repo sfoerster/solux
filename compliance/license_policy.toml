@@ -13,5 +13,5 @@ deny_patterns = [
 # Package names to ignore during checks (normalized lowercase).
 # Keep this list minimal and documented.
 ignore_packages = [
-  "solus",
+  "solux",
 ]

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.modules._helpers import (
+from solux.modules._helpers import (
     _is_private_ip,
     _resolved_ips,
     as_bool,
@@ -100,14 +100,14 @@ class TestResolvedIps:
     def test_resolution_failure_returns_empty(self) -> None:
         import socket
 
-        with patch("solus.modules._helpers.socket.getaddrinfo", side_effect=socket.gaierror("nope")):
+        with patch("solux.modules._helpers.socket.getaddrinfo", side_effect=socket.gaierror("nope")):
             assert _resolved_ips("nonexistent.invalid") == set()
 
     def test_returns_ip_strings(self) -> None:
         fake_addrinfo = [
             (2, 1, 6, "", ("93.184.216.34", 0)),
         ]
-        with patch("solus.modules._helpers.socket.getaddrinfo", return_value=fake_addrinfo):
+        with patch("solux.modules._helpers.socket.getaddrinfo", return_value=fake_addrinfo):
             result = _resolved_ips("example.com")
         assert "93.184.216.34" in result
 
@@ -115,7 +115,7 @@ class TestResolvedIps:
         fake_addrinfo = [
             (2, 1, 6, "", ()),  # empty sockaddr
         ]
-        with patch("solus.modules._helpers.socket.getaddrinfo", return_value=fake_addrinfo):
+        with patch("solux.modules._helpers.socket.getaddrinfo", return_value=fake_addrinfo):
             result = _resolved_ips("example.com")
         assert result == set()
 
@@ -149,7 +149,7 @@ class TestValidateHttpUrl:
             validate_http_url("http://192.168.1.1/api", block_private=True)
 
     def test_block_private_with_resolution(self) -> None:
-        with patch("solus.modules._helpers._resolved_ips", return_value={"127.0.0.1"}):
+        with patch("solux.modules._helpers._resolved_ips", return_value={"127.0.0.1"}):
             with pytest.raises(RuntimeError, match="resolved to a private"):
                 validate_http_url(
                     "http://sneaky.example.com/api",
@@ -158,7 +158,7 @@ class TestValidateHttpUrl:
                 )
 
     def test_unresolvable_host_blocked_in_untrusted(self) -> None:
-        with patch("solus.modules._helpers._resolved_ips", return_value=set()):
+        with patch("solux.modules._helpers._resolved_ips", return_value=set()):
             with pytest.raises(RuntimeError, match="could not be resolved"):
                 validate_http_url(
                     "http://ghost.example.com",
@@ -183,7 +183,7 @@ class TestFetchWithRedirectGuard:
         resp.is_permanent_redirect = False
         resp.status_code = 200
 
-        with patch("solus.modules._helpers.requests.get", return_value=resp):
+        with patch("solux.modules._helpers.requests.get", return_value=resp):
             result = fetch_with_redirect_guard("http://example.com")
         assert result is resp
 
@@ -198,7 +198,7 @@ class TestFetchWithRedirectGuard:
         final_resp.is_permanent_redirect = False
         final_resp.status_code = 200
 
-        with patch("solus.modules._helpers.requests.get", side_effect=[redirect_resp, final_resp]):
+        with patch("solux.modules._helpers.requests.get", side_effect=[redirect_resp, final_resp]):
             result = fetch_with_redirect_guard("http://example.com/start")
         assert result is final_resp
 
@@ -208,7 +208,7 @@ class TestFetchWithRedirectGuard:
         redirect_resp.is_permanent_redirect = False
         redirect_resp.headers = {"Location": "http://example.com/loop"}
 
-        with patch("solus.modules._helpers.requests.get", return_value=redirect_resp):
+        with patch("solux.modules._helpers.requests.get", return_value=redirect_resp):
             with pytest.raises(RuntimeError, match="too many redirects"):
                 fetch_with_redirect_guard("http://example.com/start")
 
@@ -218,7 +218,7 @@ class TestFetchWithRedirectGuard:
         redirect_resp.is_permanent_redirect = False
         redirect_resp.headers = {}  # No Location
 
-        with patch("solus.modules._helpers.requests.get", return_value=redirect_resp):
+        with patch("solux.modules._helpers.requests.get", return_value=redirect_resp):
             result = fetch_with_redirect_guard("http://example.com")
         # Should return the response (after raise_for_status)
         redirect_resp.raise_for_status.assert_called_once()
@@ -229,7 +229,7 @@ class TestFetchWithRedirectGuard:
         redirect_resp.is_permanent_redirect = False
         redirect_resp.headers = {"Location": "http://127.0.0.1/internal"}
 
-        with patch("solus.modules._helpers.requests.get", return_value=redirect_resp):
+        with patch("solux.modules._helpers.requests.get", return_value=redirect_resp):
             with pytest.raises(RuntimeError, match="private or loopback"):
                 fetch_with_redirect_guard("http://example.com", block_private=True)
 

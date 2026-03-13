@@ -9,9 +9,9 @@ from unittest.mock import MagicMock
 import pytest
 from unittest.mock import patch
 
-from solus.workflows.expr import evaluate_when
-from solus.workflows.models import Context, ContextKeys, Step, Workflow
-from solus.workflows.registry import StepRegistry
+from solux.workflows.expr import evaluate_when
+from solux.workflows.models import Context, ContextKeys, Step, Workflow
+from solux.workflows.registry import StepRegistry
 
 
 def _make_config() -> MagicMock:
@@ -136,7 +136,7 @@ def test_when_dunder_attribute_rejected() -> None:
 
 
 def test_engine_skips_step_when_false() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     calls = []
 
@@ -165,7 +165,7 @@ def test_engine_skips_step_when_false() -> None:
 
 
 def test_engine_runs_step_when_key_present() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     ran = []
 
@@ -195,7 +195,7 @@ def test_engine_runs_step_when_key_present() -> None:
 
 
 def test_engine_skips_step_when_key_absent() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     ran = []
 
@@ -224,7 +224,7 @@ def test_engine_skips_step_when_key_absent() -> None:
 
 
 def test_engine_foreach_iterates_items() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     seen_items = []
 
@@ -248,7 +248,7 @@ def test_engine_foreach_iterates_items() -> None:
 
 
 def test_engine_foreach_provides_index() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     seen_indices = []
 
@@ -272,7 +272,7 @@ def test_engine_foreach_provides_index() -> None:
 
 
 def test_engine_foreach_empty_list_no_calls() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     calls = []
 
@@ -296,7 +296,7 @@ def test_engine_foreach_empty_list_no_calls() -> None:
 
 
 def test_engine_foreach_missing_key_no_calls() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     calls = []
 
@@ -320,7 +320,7 @@ def test_engine_foreach_missing_key_no_calls() -> None:
 
 
 def test_engine_foreach_accumulates_side_effects() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def append_result(ctx: Context, step: Step) -> Context:
         results = list(ctx.data.get("results", []))
@@ -349,7 +349,7 @@ def test_engine_foreach_accumulates_side_effects() -> None:
 
 
 def test_subworkflow_step_runs_child_workflow() -> None:
-    from solus.modules.meta.subworkflow import handle
+    from solux.modules.meta.subworkflow import handle
 
     inner_ran = []
 
@@ -371,8 +371,8 @@ def test_subworkflow_step_runs_child_workflow() -> None:
     step = Step(name="run_child", type="workflow", config={"name": "child"})
 
     # load_workflow is imported inside handle(), so patch at the loader module level
-    with patch("solus.workflows.loader.load_workflow", return_value=child_wf):
-        with patch("solus.workflows.engine.global_registry", child_reg):
+    with patch("solux.workflows.loader.load_workflow", return_value=child_wf):
+        with patch("solux.workflows.engine.global_registry", child_reg):
             result = handle(ctx, step)
 
     assert inner_ran == ["ran"]
@@ -380,7 +380,7 @@ def test_subworkflow_step_runs_child_workflow() -> None:
 
 
 def test_subworkflow_step_missing_name_raises() -> None:
-    from solus.modules.meta.subworkflow import handle
+    from solux.modules.meta.subworkflow import handle
 
     ctx = _ctx()
     step = Step(name="run_child", type="workflow", config={})
@@ -390,7 +390,7 @@ def test_subworkflow_step_missing_name_raises() -> None:
 
 def test_subworkflow_cycle_detection_raises() -> None:
     """A circular reference A -> A must raise RuntimeError, not recurse infinitely."""
-    from solus.modules.meta.subworkflow import handle
+    from solux.modules.meta.subworkflow import handle
 
     # Simulate being mid-way through executing workflow "parent"
     ctx = _ctx(data={"_subworkflow_stack": ["parent"]})
@@ -402,7 +402,7 @@ def test_subworkflow_cycle_detection_raises() -> None:
 
 def test_subworkflow_indirect_cycle_detection_raises() -> None:
     """An indirect cycle A -> B -> A must also be caught."""
-    from solus.modules.meta.subworkflow import handle
+    from solux.modules.meta.subworkflow import handle
 
     ctx = _ctx(data={"_subworkflow_stack": ["a", "b"]})
     step = Step(name="recurse", type="workflow", config={"name": "a"})
@@ -412,7 +412,7 @@ def test_subworkflow_indirect_cycle_detection_raises() -> None:
 
 def test_engine_foreach_cap_raises() -> None:
     """Workflows iterating more than _FOREACH_MAX_ITEMS items must be rejected."""
-    from solus.workflows.engine import _FOREACH_MAX_ITEMS, execute_workflow
+    from solux.workflows.engine import _FOREACH_MAX_ITEMS, execute_workflow
 
     calls = []
 
@@ -445,7 +445,7 @@ def test_engine_foreach_cap_raises() -> None:
 
 
 def test_branch_selects_correct_workflow() -> None:
-    from solus.modules.meta.branch import handle
+    from solux.modules.meta.branch import handle
 
     inner_ran = []
 
@@ -473,8 +473,8 @@ def test_branch_selects_correct_workflow() -> None:
         },
     )
 
-    with patch("solus.workflows.loader.load_workflow", return_value=invoice_wf):
-        with patch("solus.workflows.engine.global_registry", child_reg):
+    with patch("solux.workflows.loader.load_workflow", return_value=invoice_wf):
+        with patch("solux.workflows.engine.global_registry", child_reg):
             result = handle(ctx, step)
 
     assert inner_ran == ["invoice_step"]
@@ -482,7 +482,7 @@ def test_branch_selects_correct_workflow() -> None:
 
 
 def test_branch_uses_default_when_no_match() -> None:
-    from solus.modules.meta.branch import handle
+    from solux.modules.meta.branch import handle
 
     inner_ran = []
 
@@ -510,15 +510,15 @@ def test_branch_uses_default_when_no_match() -> None:
         },
     )
 
-    with patch("solus.workflows.loader.load_workflow", return_value=default_wf):
-        with patch("solus.workflows.engine.global_registry", child_reg):
+    with patch("solux.workflows.loader.load_workflow", return_value=default_wf):
+        with patch("solux.workflows.engine.global_registry", child_reg):
             result = handle(ctx, step)
 
     assert inner_ran == ["default"]
 
 
 def test_branch_raises_without_default_on_no_match() -> None:
-    from solus.modules.meta.branch import handle
+    from solux.modules.meta.branch import handle
 
     ctx = _ctx(data={"doc_type": "unknown"})
     step = Step(
@@ -534,7 +534,7 @@ def test_branch_raises_without_default_on_no_match() -> None:
 
 
 def test_branch_missing_condition_key_raises() -> None:
-    from solus.modules.meta.branch import handle
+    from solux.modules.meta.branch import handle
 
     ctx = _ctx()
     step = Step(name="route", type="branch", config={"branches": {"a": "wf_a"}})
@@ -543,7 +543,7 @@ def test_branch_missing_condition_key_raises() -> None:
 
 
 def test_branch_cycle_detection() -> None:
-    from solus.modules.meta.branch import handle
+    from solux.modules.meta.branch import handle
 
     ctx = _ctx(data={"doc_type": "a", "_subworkflow_stack": ["process_a"]})
     step = Step(
@@ -564,7 +564,7 @@ def test_branch_cycle_detection() -> None:
 
 
 def test_on_error_runs_fallback_workflow() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     calls = []
 
@@ -593,7 +593,7 @@ def test_on_error_runs_fallback_workflow() -> None:
     )
 
     ctx = _ctx()
-    with patch("solus.workflows.loader.load_workflow", return_value=recovery_wf):
+    with patch("solux.workflows.loader.load_workflow", return_value=recovery_wf):
         result = execute_workflow(wf, ctx, registry=reg)
 
     assert calls == ["recovered"]
@@ -601,7 +601,7 @@ def test_on_error_runs_fallback_workflow() -> None:
 
 
 def test_on_error_sets_error_context_keys() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def failing_handler(ctx: Context, step: Step) -> Context:
         raise ValueError("test error message")
@@ -626,7 +626,7 @@ def test_on_error_sets_error_context_keys() -> None:
     )
 
     ctx = _ctx()
-    with patch("solus.workflows.loader.load_workflow", return_value=recovery_wf):
+    with patch("solux.workflows.loader.load_workflow", return_value=recovery_wf):
         result = execute_workflow(wf, ctx, registry=reg)
 
     assert result.data[ContextKeys.ERROR] == "test error message"
@@ -634,7 +634,7 @@ def test_on_error_sets_error_context_keys() -> None:
 
 
 def test_on_error_fallback_failure_raises_original() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def failing_handler(ctx: Context, step: Step) -> Context:
         raise RuntimeError("original error")
@@ -659,13 +659,13 @@ def test_on_error_fallback_failure_raises_original() -> None:
     )
 
     ctx = _ctx()
-    with patch("solus.workflows.loader.load_workflow", return_value=recovery_wf):
+    with patch("solux.workflows.loader.load_workflow", return_value=recovery_wf):
         with pytest.raises(RuntimeError, match="original error"):
             execute_workflow(wf, ctx, registry=reg)
 
 
 def test_on_error_none_reraises() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def failing_handler(ctx: Context, step: Step) -> Context:
         raise RuntimeError("unhandled")
@@ -690,7 +690,7 @@ def test_on_error_none_reraises() -> None:
 
 
 def test_parallel_foreach_runs_all_items() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     import threading
 
@@ -720,7 +720,7 @@ def test_parallel_foreach_runs_all_items() -> None:
 
 
 def test_parallel_foreach_results_collected() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def tag(ctx: Context, step: Step) -> Context:
         ctx.data["tag"] = f"done:{ctx.data.get('_item')}"
@@ -747,7 +747,7 @@ def test_parallel_foreach_results_collected() -> None:
 
 
 def test_parallel_foreach_zero_is_sequential() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     seen = []
 
@@ -775,7 +775,7 @@ def test_parallel_foreach_zero_is_sequential() -> None:
 
 
 def test_parallel_foreach_exception_propagates() -> None:
-    from solus.workflows.engine import execute_workflow
+    from solux.workflows.engine import execute_workflow
 
     def explode(ctx: Context, step: Step) -> Context:
         if ctx.data.get("_item") == "bad":
@@ -803,7 +803,7 @@ def test_parallel_foreach_exception_propagates() -> None:
 
 
 def test_loader_parses_on_error_field() -> None:
-    from solus.workflows.loader import _parse_step
+    from solux.workflows.loader import _parse_step
 
     raw = {"name": "risky", "type": "test.step", "config": {}, "on_error": "recovery"}
     step = _parse_step(raw, 0, interpolate_secrets=False)
@@ -811,7 +811,7 @@ def test_loader_parses_on_error_field() -> None:
 
 
 def test_loader_on_error_none_by_default() -> None:
-    from solus.workflows.loader import _parse_step
+    from solux.workflows.loader import _parse_step
 
     raw = {"name": "normal", "type": "test.step", "config": {}}
     step = _parse_step(raw, 0, interpolate_secrets=False)
@@ -819,7 +819,7 @@ def test_loader_on_error_none_by_default() -> None:
 
 
 def test_loader_on_error_non_string_raises() -> None:
-    from solus.workflows.loader import WorkflowLoadError, _parse_step
+    from solux.workflows.loader import WorkflowLoadError, _parse_step
 
     raw = {"name": "bad", "type": "test.step", "config": {}, "on_error": 123}
     with pytest.raises(WorkflowLoadError, match="on_error must be a string"):
@@ -827,7 +827,7 @@ def test_loader_on_error_non_string_raises() -> None:
 
 
 def test_workflow_to_dict_includes_on_error() -> None:
-    from solus.workflows.loader import workflow_to_dict
+    from solux.workflows.loader import workflow_to_dict
 
     wf = Workflow(
         name="test",
@@ -839,7 +839,7 @@ def test_workflow_to_dict_includes_on_error() -> None:
 
 
 def test_workflow_to_dict_omits_on_error_when_none() -> None:
-    from solus.workflows.loader import workflow_to_dict
+    from solux.workflows.loader import workflow_to_dict
 
     wf = Workflow(
         name="test",

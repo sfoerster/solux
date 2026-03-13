@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.db import (
+from solux.db import (
     db_claim_next_pending_job,
     db_enqueue_jobs,
     db_move_to_dead_letter,
@@ -18,13 +18,13 @@ from solus.db import (
     db_schedule_retry,
     db_update_job,
 )
-from solus.workflows.models import Context, Step, Workflow
-from solus.workflows.engine import execute_workflow
-from solus.workflows.registry import StepRegistry
+from solux.workflows.models import Context, Step, Workflow
+from solux.workflows.engine import execute_workflow
+from solux.workflows.registry import StepRegistry
 
 
 def _make_ctx(data: dict | None = None) -> Context:
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -130,7 +130,7 @@ def test_db_move_to_dead_letter_nonexistent(tmp_path: Path) -> None:
 
 
 def test_db_claim_retry_jobs(tmp_path: Path) -> None:
-    from solus.db import db_claim_retry_jobs
+    from solux.db import db_claim_retry_jobs
 
     cache_dir = tmp_path / "cache"
     jobs = db_enqueue_jobs(cache_dir, ["test-source"])
@@ -316,7 +316,7 @@ def test_engine_step_no_timeout_completes() -> None:
 
 def test_step_timeout_daemon_thread_returns_result() -> None:
     """Verify that the daemon-thread timeout wrapper returns correct results."""
-    from solus.workflows.engine import _run_step_with_optional_timeout
+    from solux.workflows.engine import _run_step_with_optional_timeout
 
     result = _run_step_with_optional_timeout(
         lambda: "ok",
@@ -331,7 +331,7 @@ def test_step_timeout_daemon_thread_returns_result() -> None:
 
 
 def test_worker_retry_logic(tmp_path: Path) -> None:
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -340,8 +340,8 @@ def test_worker_retry_logic(tmp_path: Path) -> None:
         SecurityConfig,
         WhisperConfig,
     )
-    from solus.queueing import enqueue_jobs, read_jobs
-    from solus.worker import run_log_worker
+    from solux.queueing import enqueue_jobs, read_jobs
+    from solux.worker import run_log_worker
 
     cache_dir = tmp_path / "cache"
     config = Config(
@@ -357,7 +357,7 @@ def test_worker_retry_logic(tmp_path: Path) -> None:
     )
     enqueue_jobs(cache_dir, ["fail-source"])
 
-    with patch("solus.worker.execute_source_workflow", side_effect=RuntimeError("test fail")):
+    with patch("solux.worker.execute_source_workflow", side_effect=RuntimeError("test fail")):
         run_log_worker(config, poll_interval=0.01, once=True)
 
     jobs = read_jobs(cache_dir)
@@ -370,7 +370,7 @@ def test_worker_retry_logic(tmp_path: Path) -> None:
 
 def test_worker_dead_letter_after_max_retries(tmp_path: Path) -> None:
     """After max retries + 1 failures, job should be dead_letter."""
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -379,8 +379,8 @@ def test_worker_dead_letter_after_max_retries(tmp_path: Path) -> None:
         SecurityConfig,
         WhisperConfig,
     )
-    from solus.db import db_enqueue_jobs, db_read_jobs, db_schedule_retry, db_update_job
-    from solus.db import db_claim_next_pending_job, db_move_to_dead_letter
+    from solux.db import db_enqueue_jobs, db_read_jobs, db_schedule_retry, db_update_job
+    from solux.db import db_claim_next_pending_job, db_move_to_dead_letter
 
     cache_dir = tmp_path / "cache"
     jobs = db_enqueue_jobs(cache_dir, ["dead-source"])
@@ -402,7 +402,7 @@ def test_worker_dead_letter_after_max_retries(tmp_path: Path) -> None:
 
 
 def test_worker_timeout_error_skips_retry_and_moves_to_dead_letter(tmp_path: Path) -> None:
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -411,9 +411,9 @@ def test_worker_timeout_error_skips_retry_and_moves_to_dead_letter(tmp_path: Pat
         SecurityConfig,
         WhisperConfig,
     )
-    from solus.queueing import enqueue_jobs, read_jobs
-    from solus.worker import run_log_worker
-    from solus.workflows.engine import StepTimeoutError
+    from solux.queueing import enqueue_jobs, read_jobs
+    from solux.worker import run_log_worker
+    from solux.workflows.engine import StepTimeoutError
 
     cache_dir = tmp_path / "cache"
     config = Config(
@@ -429,7 +429,7 @@ def test_worker_timeout_error_skips_retry_and_moves_to_dead_letter(tmp_path: Pat
     )
     enqueue_jobs(cache_dir, ["timeout-source"])
 
-    with patch("solus.worker.execute_source_workflow", side_effect=StepTimeoutError("timed out")):
+    with patch("solux.worker.execute_source_workflow", side_effect=StepTimeoutError("timed out")):
         run_log_worker(config, poll_interval=0.01, once=True)
 
     jobs = read_jobs(cache_dir)

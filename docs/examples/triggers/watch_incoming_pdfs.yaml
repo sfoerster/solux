@@ -5,7 +5,7 @@
 # NFS mount, or cloud-storage sync folder).
 #
 # The ingest_and_forward workflow will extract the PDF text and forward it
-# to the GPU Node B defined by GPU_NODE_URL in ~/.config/solus/.env.
+# to the GPU Node B defined by GPU_NODE_URL in ~/.config/solux/.env.
 
 name: watch_incoming_pdfs
 enabled: false

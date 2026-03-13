@@ -12,25 +12,25 @@ That's it. No ffmpeg, no whisper, no yt-dlp needed for your first run.
 ## 1. Install
 
 ```bash
-git clone https://github.com/sfoerster/solus.git
-cd solus
+git clone https://github.com/sfoerster/solux.git
+cd solux
 pip install -e .
 ```
 
 ## 2. Set up
 
 ```bash
-solus init
+solux init
 ```
 
 This single command:
 
-- Creates `~/.config/solus/config.toml` with sensible defaults
+- Creates `~/.config/solux/config.toml` with sensible defaults
 - Checks that Ollama is running and your model is available
-- Scaffolds a starter workflow (`my_summarizer.yaml`) in `~/.config/solus/workflows.d/`
+- Scaffolds a starter workflow (`my_summarizer.yaml`) in `~/.config/solux/workflows.d/`
 - Runs a health check scoped to what you actually need
 
-If Ollama isn't installed yet, `solus init` prints platform-specific install instructions.
+If Ollama isn't installed yet, `solux init` prints platform-specific install instructions.
 
 ### Pull a model (if needed)
 
@@ -41,25 +41,25 @@ ollama pull qwen3:8b
 ## 3. Run
 
 ```bash
-solus https://example.com/any-article
+solux https://example.com/any-article
 ```
 
-Solus fetches the page, extracts text, summarizes it with your local LLM, and prints the result. The default workflow is `webpage_summary` — no audio stack required.
+Solux fetches the page, extracts text, summarizes it with your local LLM, and prints the result. The default workflow is `webpage_summary` — no audio stack required.
 
 ### Dry-run first
 
 Preview what a workflow will do without executing it:
 
 ```bash
-solus run --dry-run --workflow webpage_summary https://example.com
+solux run --dry-run --workflow webpage_summary https://example.com
 ```
 
 ## 4. Explore
 
 ```bash
-solus examples                # browse workflow templates
-solus workflows list          # see all available workflows
-solus modules list            # see all available modules
+solux examples                # browse workflow templates
+solux workflows list          # see all available workflows
+solux modules list            # see all available modules
 ```
 
 ## 5. Edit your workflow
@@ -67,7 +67,7 @@ solus modules list            # see all available modules
 Open the scaffolded workflow and customize it:
 
 ```bash
-$EDITOR ~/.config/solus/workflows.d/my_summarizer.yaml
+$EDITOR ~/.config/solux/workflows.d/my_summarizer.yaml
 ```
 
 The starter workflow chains four steps:
@@ -97,25 +97,25 @@ steps:
 Run it:
 
 ```bash
-solus run --workflow my_summarizer https://example.com/article
+solux run --workflow my_summarizer https://example.com/article
 ```
 
 ## Health checks
 
 ```bash
-solus doctor                                  # check deps for your workflows
-solus doctor --workflow audio_summary         # check audio pipeline deps
-solus doctor --all                            # check everything
-solus doctor --fix                            # show copy-pasteable fix commands
+solux doctor                                  # check deps for your workflows
+solux doctor --workflow audio_summary         # check audio pipeline deps
+solux doctor --all                            # check everything
+solux doctor --fix                            # show copy-pasteable fix commands
 ```
 
-By default, `solus doctor` only checks dependencies that your configured workflows actually use. Use `--all` to check everything (including audio tools you may not need yet).
+By default, `solux doctor` only checks dependencies that your configured workflows actually use. Use `--all` to check everything (including audio tools you may not need yet).
 
 ## Next steps
 
-- **Audio pipeline**: Install yt-dlp + ffmpeg + whisper.cpp, then run `solus doctor --workflow audio_summary`
-- **Background processing**: `solus ingest URL && solus worker start`
-- **Triggers**: `solus triggers examples` for RSS, cron, folder-watch, and email templates
-- **Web UI**: `solus serve` starts a dashboard at http://localhost:8765
+- **Audio pipeline**: Install yt-dlp + ffmpeg + whisper.cpp, then run `solux doctor --workflow audio_summary`
+- **Background processing**: `solux ingest URL && solux worker start`
+- **Triggers**: `solux triggers examples` for RSS, cron, folder-watch, and email templates
+- **Web UI**: `solux serve` starts a dashboard at http://localhost:8765
 - **Full tutorial**: [docs/TUTORIAL.md](TUTORIAL.md)
-- **Custom modules**: Drop a `.py` file in `~/.config/solus/modules.d/` — see [README.md](../README.md#external-modules)
+- **Custom modules**: Drop a `.py` file in `~/.config/solux/modules.d/` — see [README.md](../README.md#external-modules)

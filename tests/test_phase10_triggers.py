@@ -10,9 +10,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.triggers.loader import VALID_TYPES, load_triggers
-from solus.triggers.runner import _cron_matches, CronTrigger, EmailPollTrigger
-from solus.triggers.spec import Trigger
+from solux.triggers.loader import VALID_TYPES, load_triggers
+from solux.triggers.runner import _cron_matches, CronTrigger, EmailPollTrigger
+from solux.triggers.spec import Trigger
 
 
 def _make_trigger(t_type: str, config: dict | None = None) -> Trigger:
@@ -102,7 +102,7 @@ def test_cron_invalid_field_count() -> None:
 
 
 def test_cron_trigger_interval(tmp_path: Path) -> None:
-    from solus.triggers.runner import _STATE_DB_PATH
+    from solux.triggers.runner import _STATE_DB_PATH
 
     trigger = _make_trigger("cron", {"interval_seconds": 1})
     stop = threading.Event()
@@ -112,7 +112,7 @@ def test_cron_trigger_interval(tmp_path: Path) -> None:
     ct = CronTrigger(trigger, cache_dir, state_db, stop)
     fired = []
 
-    with patch("solus.triggers.cron.enqueue_jobs") as mock_enqueue:
+    with patch("solux.triggers.cron.enqueue_jobs") as mock_enqueue:
         mock_enqueue.side_effect = lambda *a, **kw: fired.append(True)
         t = threading.Thread(target=ct.run, daemon=True)
         t.start()
@@ -133,7 +133,7 @@ def test_cron_trigger_schedule_no_match(tmp_path: Path) -> None:
     ct = CronTrigger(trigger, cache_dir, state_db, stop)
     fired = []
 
-    with patch("solus.triggers.cron.enqueue_jobs") as mock_enqueue:
+    with patch("solux.triggers.cron.enqueue_jobs") as mock_enqueue:
         mock_enqueue.side_effect = lambda *a, **kw: fired.append(True)
         t = threading.Thread(target=ct.run, daemon=True)
         t.start()
@@ -218,8 +218,8 @@ def test_email_poll_trigger_retries_when_enqueue_fails(tmp_path: Path) -> None:
         stop.set()
         return []
 
-    with patch("solus.triggers.email_poll.imaplib.IMAP4_SSL", return_value=FakeIMAP()):
-        with patch("solus.triggers.email_poll.enqueue_jobs", side_effect=_enqueue):
+    with patch("solux.triggers.email_poll.imaplib.IMAP4_SSL", return_value=FakeIMAP()):
+        with patch("solux.triggers.email_poll.enqueue_jobs", side_effect=_enqueue):
             t = threading.Thread(target=ept.run, daemon=True)
             t.start()
             t.join(timeout=1.0)
@@ -283,7 +283,7 @@ def test_load_triggers_email_poll_yaml(tmp_path: Path) -> None:
 
 
 def test_trigger_webhook_api(tmp_path: Path) -> None:
-    from solus.serve.api import handle_trigger_webhook
+    from solux.serve.api import handle_trigger_webhook
     from unittest.mock import patch
 
     cache_dir = tmp_path / "cache"
@@ -292,11 +292,11 @@ def test_trigger_webhook_api(tmp_path: Path) -> None:
     mock_wf = MagicMock()
     mock_wf.name = "test_workflow"
 
-    with patch("solus.workflows.loader.load_workflow", return_value=mock_wf):
-        with patch("solus.workflows.registry.build_registry", return_value=MagicMock()):
-            with patch("solus.workflows.validation.validate_workflow") as mock_validate:
+    with patch("solux.workflows.loader.load_workflow", return_value=mock_wf):
+        with patch("solux.workflows.registry.build_registry", return_value=MagicMock()):
+            with patch("solux.workflows.validation.validate_workflow") as mock_validate:
                 mock_validate.return_value = MagicMock(valid=True, issues=[])
-                with patch("solus.serve.api.enqueue_jobs") as mock_enqueue:
+                with patch("solux.serve.api.enqueue_jobs") as mock_enqueue:
                     mock_enqueue.return_value = [{"job_id": "abc123"}]
                     ok, result = handle_trigger_webhook(cache_dir, "test_workflow", {"source": "test"})
 
@@ -306,13 +306,13 @@ def test_trigger_webhook_api(tmp_path: Path) -> None:
 
 
 def test_trigger_webhook_unknown_workflow(tmp_path: Path) -> None:
-    from solus.serve.api import handle_trigger_webhook
-    from solus.workflows.loader import WorkflowLoadError
+    from solux.serve.api import handle_trigger_webhook
+    from solux.workflows.loader import WorkflowLoadError
 
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
 
-    with patch("solus.workflows.loader.load_workflow", side_effect=WorkflowLoadError("not found")):
+    with patch("solux.workflows.loader.load_workflow", side_effect=WorkflowLoadError("not found")):
         ok, result = handle_trigger_webhook(cache_dir, "no_such_workflow", {})
 
     assert ok is False
@@ -323,7 +323,7 @@ def test_trigger_webhook_unknown_workflow(tmp_path: Path) -> None:
 
 
 def test_run_triggers_creates_cron_thread(tmp_path: Path) -> None:
-    from solus.triggers.runner import run_triggers
+    from solux.triggers.runner import run_triggers
 
     trigger = _make_trigger("cron", {"interval_seconds": 9999})
     stop = threading.Event()
@@ -338,7 +338,7 @@ def test_run_triggers_creates_cron_thread(tmp_path: Path) -> None:
 
 
 def test_run_triggers_defaults_state_db_to_cache_dir(tmp_path: Path) -> None:
-    from solus.triggers.runner import run_triggers
+    from solux.triggers.runner import run_triggers
 
     watch_dir = tmp_path / "watch"
     watch_dir.mkdir()
@@ -358,7 +358,7 @@ def test_run_triggers_defaults_state_db_to_cache_dir(tmp_path: Path) -> None:
 
 
 def test_run_triggers_creates_email_poll_thread(tmp_path: Path) -> None:
-    from solus.triggers.runner import run_triggers
+    from solux.triggers.runner import run_triggers
 
     trigger = _make_trigger(
         "email_poll",

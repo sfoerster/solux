@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from solus.cleanup import (
+from solux.cleanup import (
     _collect_all_targets,
     _collect_artifact_targets,
     _collect_finished_targets,
@@ -22,7 +22,7 @@ from solus.cleanup import (
     _source_last_update,
     run_cleanup,
 )
-from solus.config import Config, PathsConfig
+from solux.config import Config, PathsConfig
 
 
 def _make_config(cache_dir: Path) -> Config:

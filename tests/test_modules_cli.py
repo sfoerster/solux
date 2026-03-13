@@ -3,7 +3,7 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-from solus.cli import main, parse_args
+from solux.cli import main, parse_args
 
 
 def test_parse_args_modules_list() -> None:
@@ -110,7 +110,7 @@ def test_modules_inspect_uses_configured_modules_dir(monkeypatch, tmp_path: Path
     (modules_dir / "extmod.py").write_text(
         textwrap.dedent(
             """\
-            from solus.modules.spec import ContextKey, ModuleSpec
+            from solux.modules.spec import ContextKey, ModuleSpec
 
             def handle(ctx, step):
                 del step
@@ -130,7 +130,7 @@ def test_modules_inspect_uses_configured_modules_dir(monkeypatch, tmp_path: Path
         encoding="utf-8",
     )
 
-    config_dir = tmp_path / ".config" / "solus"
+    config_dir = tmp_path / ".config" / "solux"
     config_dir.mkdir(parents=True)
     (config_dir / "config.toml").write_text(
         f'[modules]\ndir = "{modules_dir}"\n',

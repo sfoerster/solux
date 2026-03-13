@@ -9,13 +9,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.modules.discovery import discover_modules
-from solus.workflows.models import Context, Step
-from solus.workflows.registry import StepRegistry
+from solux.modules.discovery import discover_modules
+from solux.workflows.models import Context, Step
+from solux.workflows.registry import StepRegistry
 
 
 def _make_ctx(data: dict[str, Any] | None = None, source: str = "test-source") -> Context:
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -54,7 +54,7 @@ def _make_step(step_type: str, config: dict | None = None) -> Step:
 
 
 def test_text_split_paragraph() -> None:
-    from solus.modules.transform.text_split import handle, MODULE
+    from solux.modules.transform.text_split import handle, MODULE
 
     ctx = _make_ctx({"input_text": "Para one.\n\nPara two.\n\nPara three."})
     step = _make_step("transform.text_split", {"method": "paragraph"})
@@ -65,7 +65,7 @@ def test_text_split_paragraph() -> None:
 
 
 def test_text_split_sentence() -> None:
-    from solus.modules.transform.text_split import handle
+    from solux.modules.transform.text_split import handle
 
     ctx = _make_ctx({"input_text": "Hello world. This is a test. And one more."})
     step = _make_step("transform.text_split", {"method": "sentence"})
@@ -74,7 +74,7 @@ def test_text_split_sentence() -> None:
 
 
 def test_text_split_fixed() -> None:
-    from solus.modules.transform.text_split import handle
+    from solux.modules.transform.text_split import handle
 
     text = "A" * 500
     ctx = _make_ctx({"input_text": text})
@@ -86,7 +86,7 @@ def test_text_split_fixed() -> None:
 
 
 def test_text_split_fixed_clamps_overlap_to_avoid_infinite_loop() -> None:
-    from solus.modules.transform.text_split import handle
+    from solux.modules.transform.text_split import handle
 
     text = "A" * 24
     ctx = _make_ctx({"input_text": text})
@@ -103,7 +103,7 @@ def test_text_split_fixed_clamps_overlap_to_avoid_infinite_loop() -> None:
 
 
 def test_text_split_custom_keys() -> None:
-    from solus.modules.transform.text_split import handle
+    from solux.modules.transform.text_split import handle
 
     ctx = _make_ctx({"my_text": "Para A.\n\nPara B."})
     step = _make_step("transform.text_split", {"input_key": "my_text", "output_key": "my_chunks"})
@@ -112,7 +112,7 @@ def test_text_split_custom_keys() -> None:
 
 
 def test_text_split_missing_input_raises() -> None:
-    from solus.modules.transform.text_split import handle
+    from solux.modules.transform.text_split import handle
 
     ctx = _make_ctx({})
     step = _make_step("transform.text_split")
@@ -121,7 +121,7 @@ def test_text_split_missing_input_raises() -> None:
 
 
 def test_text_split_module_spec() -> None:
-    from solus.modules.transform.text_split import MODULE
+    from solux.modules.transform.text_split import MODULE
 
     assert MODULE.name == "text_split"
     assert MODULE.category == "transform"
@@ -132,7 +132,7 @@ def test_text_split_module_spec() -> None:
 
 
 def test_text_clean_strips_html() -> None:
-    from solus.modules.transform.text_clean import handle
+    from solux.modules.transform.text_clean import handle
 
     ctx = _make_ctx({"input_text": "<p>Hello <b>world</b></p>"})
     step = _make_step("transform.text_clean", {"strip_html": True})
@@ -142,7 +142,7 @@ def test_text_clean_strips_html() -> None:
 
 
 def test_text_clean_no_strip_html() -> None:
-    from solus.modules.transform.text_clean import handle
+    from solux.modules.transform.text_clean import handle
 
     ctx = _make_ctx({"input_text": "<p>Hello</p>"})
     step = _make_step("transform.text_clean", {"strip_html": False, "normalize_whitespace": False})
@@ -151,7 +151,7 @@ def test_text_clean_no_strip_html() -> None:
 
 
 def test_text_clean_normalize_whitespace() -> None:
-    from solus.modules.transform.text_clean import handle
+    from solux.modules.transform.text_clean import handle
 
     ctx = _make_ctx({"input_text": "hello   world\n\n\n\nextra"})
     step = _make_step("transform.text_clean", {"strip_html": False, "normalize_whitespace": True})
@@ -161,7 +161,7 @@ def test_text_clean_normalize_whitespace() -> None:
 
 
 def test_text_clean_max_chars() -> None:
-    from solus.modules.transform.text_clean import handle
+    from solux.modules.transform.text_clean import handle
 
     ctx = _make_ctx({"input_text": "A" * 1000})
     step = _make_step("transform.text_clean", {"strip_html": False, "normalize_whitespace": False, "max_chars": 100})
@@ -170,7 +170,7 @@ def test_text_clean_max_chars() -> None:
 
 
 def test_text_clean_module_spec() -> None:
-    from solus.modules.transform.text_clean import MODULE
+    from solux.modules.transform.text_clean import MODULE
 
     assert MODULE.name == "text_clean"
     assert MODULE.category == "transform"
@@ -181,7 +181,7 @@ def test_text_clean_module_spec() -> None:
 
 
 def test_metadata_extract_from_source(tmp_path: Path) -> None:
-    from solus.modules.transform.metadata_extract import handle
+    from solux.modules.transform.metadata_extract import handle
 
     test_file = tmp_path / "test.txt"
     test_file.write_text("hello", encoding="utf-8")
@@ -196,7 +196,7 @@ def test_metadata_extract_from_source(tmp_path: Path) -> None:
 
 
 def test_metadata_extract_custom_key(tmp_path: Path) -> None:
-    from solus.modules.transform.metadata_extract import handle
+    from solux.modules.transform.metadata_extract import handle
 
     test_file = tmp_path / "report.pdf"
     test_file.write_bytes(b"%PDF-1.4")
@@ -207,7 +207,7 @@ def test_metadata_extract_custom_key(tmp_path: Path) -> None:
 
 
 def test_metadata_extract_module_spec() -> None:
-    from solus.modules.transform.metadata_extract import MODULE
+    from solux.modules.transform.metadata_extract import MODULE
 
     assert MODULE.name == "metadata_extract"
     assert MODULE.category == "transform"
@@ -218,7 +218,7 @@ def test_metadata_extract_module_spec() -> None:
 
 
 def test_ocr_module_spec() -> None:
-    from solus.modules.transform.ocr import MODULE
+    from solux.modules.transform.ocr import MODULE
 
     assert MODULE.name == "ocr"
     assert MODULE.category == "transform"
@@ -226,7 +226,7 @@ def test_ocr_module_spec() -> None:
 
 
 def test_ocr_raises_without_pytesseract(tmp_path: Path) -> None:
-    from solus.modules.transform.ocr import handle
+    from solux.modules.transform.ocr import handle
 
     test_file = tmp_path / "img.png"
     test_file.write_bytes(b"\x89PNG")
@@ -244,7 +244,7 @@ def test_ocr_raises_without_pytesseract(tmp_path: Path) -> None:
 
 
 def test_vector_store_module_spec() -> None:
-    from solus.modules.output.vector_store import MODULE
+    from solux.modules.output.vector_store import MODULE
 
     assert MODULE.name == "vector_store"
     assert MODULE.category == "output"
@@ -253,7 +253,7 @@ def test_vector_store_module_spec() -> None:
 
 
 def test_vector_store_raises_without_chromadb() -> None:
-    from solus.modules.output.vector_store import handle
+    from solux.modules.output.vector_store import handle
     import sys
 
     ctx = _make_ctx({"output_text": "hello"})
@@ -267,7 +267,7 @@ def test_vector_store_raises_without_chromadb() -> None:
 
 
 def test_email_send_module_spec() -> None:
-    from solus.modules.output.email_send import MODULE
+    from solux.modules.output.email_send import MODULE
 
     assert MODULE.name == "email_send"
     assert MODULE.category == "output"
@@ -277,7 +277,7 @@ def test_email_send_module_spec() -> None:
 
 
 def test_email_send_missing_host_raises() -> None:
-    from solus.modules.output.email_send import handle
+    from solux.modules.output.email_send import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step("output.email_send")
@@ -286,7 +286,7 @@ def test_email_send_missing_host_raises() -> None:
 
 
 def test_email_send_missing_to_addr_raises() -> None:
-    from solus.modules.output.email_send import handle
+    from solux.modules.output.email_send import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step("output.email_send", {"smtp_host": "mail.example.com"})
@@ -295,7 +295,7 @@ def test_email_send_missing_to_addr_raises() -> None:
 
 
 def test_email_send_env_interpolation() -> None:
-    from solus.modules._helpers import interpolate_env
+    from solux.modules._helpers import interpolate_env
     import os
 
     os.environ["TEST_SMTP_PASS"] = "secret123"
@@ -305,7 +305,7 @@ def test_email_send_env_interpolation() -> None:
 
 
 def test_email_send_subject_template_handles_display_name_key_collision() -> None:
-    from solus.modules.output.email_send import handle
+    from solux.modules.output.email_send import handle
 
     ctx = _make_ctx({"output_text": "body", "display_name": "Episode A"})
     step = _make_step(
@@ -313,14 +313,14 @@ def test_email_send_subject_template_handles_display_name_key_collision() -> Non
         {
             "smtp_host": "mail.example.com",
             "to_addr": "to@example.com",
-            "subject_template": "Solus: {display_name}",
+            "subject_template": "Solux: {display_name}",
         },
     )
 
     mock_smtp = MagicMock()
     mock_server = MagicMock()
     mock_smtp.return_value.__enter__.return_value = mock_server
-    with patch("solus.modules.output.email_send.smtplib.SMTP", mock_smtp):
+    with patch("solux.modules.output.email_send.smtplib.SMTP", mock_smtp):
         result = handle(ctx, step)
 
     assert result.data["email_sent"] is True
@@ -331,7 +331,7 @@ def test_email_send_subject_template_handles_display_name_key_collision() -> Non
 
 
 def test_obsidian_vault_write(tmp_path: Path) -> None:
-    from solus.modules.output.obsidian_vault import handle
+    from solux.modules.output.obsidian_vault import handle
 
     vault = tmp_path / "vault"
     ctx = _make_ctx({"output_text": "# Hello\nBody text", "display_name": "My Note"})
@@ -340,7 +340,7 @@ def test_obsidian_vault_write(tmp_path: Path) -> None:
         {
             "vault_path": str(vault),
             "folder": "notes",
-            "tags": ["ai", "solus"],
+            "tags": ["ai", "solux"],
         },
     )
     result = handle(ctx, step)
@@ -353,7 +353,7 @@ def test_obsidian_vault_write(tmp_path: Path) -> None:
 
 
 def test_obsidian_vault_no_overwrite(tmp_path: Path) -> None:
-    from solus.modules.output.obsidian_vault import handle
+    from solux.modules.output.obsidian_vault import handle
 
     vault = tmp_path / "vault"
     ctx = _make_ctx({"output_text": "Original", "display_name": "Note"})
@@ -368,7 +368,7 @@ def test_obsidian_vault_no_overwrite(tmp_path: Path) -> None:
 
 
 def test_obsidian_vault_module_spec() -> None:
-    from solus.modules.output.obsidian_vault import MODULE
+    from solux.modules.output.obsidian_vault import MODULE
 
     assert MODULE.name == "obsidian_vault"
     assert MODULE.safety == "trusted_only"
@@ -376,7 +376,7 @@ def test_obsidian_vault_module_spec() -> None:
 
 
 def test_obsidian_vault_missing_path_raises() -> None:
-    from solus.modules.output.obsidian_vault import handle
+    from solux.modules.output.obsidian_vault import handle
 
     ctx = _make_ctx({"output_text": "hello"})
     step = _make_step("output.obsidian_vault", {"vault_path": "   "})
@@ -388,7 +388,7 @@ def test_obsidian_vault_missing_path_raises() -> None:
 
 
 def test_slack_notify_module_spec() -> None:
-    from solus.modules.output.slack_notify import MODULE
+    from solux.modules.output.slack_notify import MODULE
 
     assert MODULE.name == "slack_notify"
     assert MODULE.safety == "trusted_only"
@@ -397,7 +397,7 @@ def test_slack_notify_module_spec() -> None:
 
 
 def test_slack_notify_missing_url_raises() -> None:
-    from solus.modules.output.slack_notify import handle
+    from solux.modules.output.slack_notify import handle
 
     ctx = _make_ctx({"output_text": "hi"})
     step = _make_step("output.slack_notify")
@@ -406,20 +406,20 @@ def test_slack_notify_missing_url_raises() -> None:
 
 
 def test_slack_notify_posts_to_webhook() -> None:
-    from solus.modules.output.slack_notify import handle
+    from solux.modules.output.slack_notify import handle
 
     ctx = _make_ctx({"output_text": "Hello Slack!"})
     step = _make_step("output.slack_notify", {"webhook_url": "https://hooks.slack.com/test"})
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    with patch("solus.modules.output.slack_notify.requests.post", return_value=mock_resp) as mock_post:
+    with patch("solux.modules.output.slack_notify.requests.post", return_value=mock_resp) as mock_post:
         result = handle(ctx, step)
     assert result.data["slack_status_code"] == 200
     mock_post.assert_called_once()
 
 
 def test_slack_notify_logs_redacted_webhook_url() -> None:
-    from solus.modules.output.slack_notify import handle
+    from solux.modules.output.slack_notify import handle
 
     ctx = _make_ctx({"output_text": "Hello Slack!"})
     ctx.logger = MagicMock()
@@ -430,14 +430,14 @@ def test_slack_notify_logs_redacted_webhook_url() -> None:
     mock_resp = MagicMock()
     mock_resp.status_code = 200
     mock_resp.ok = True
-    with patch("solus.modules.output.slack_notify.requests.post", return_value=mock_resp):
+    with patch("solux.modules.output.slack_notify.requests.post", return_value=mock_resp):
         handle(ctx, step)
 
     ctx.logger.info.assert_any_call("slack_notify: POST %s -> %d", "https://hooks.slack.com", 200)
 
 
 def test_slack_notify_raises_on_non_2xx_by_default() -> None:
-    from solus.modules.output.slack_notify import handle
+    from solux.modules.output.slack_notify import handle
 
     ctx = _make_ctx({"output_text": "Hello Slack!"})
     step = _make_step("output.slack_notify", {"webhook_url": "https://hooks.slack.com/test"})
@@ -446,13 +446,13 @@ def test_slack_notify_raises_on_non_2xx_by_default() -> None:
     mock_resp.ok = False
     mock_resp.text = "server error"
 
-    with patch("solus.modules.output.slack_notify.requests.post", return_value=mock_resp):
+    with patch("solux.modules.output.slack_notify.requests.post", return_value=mock_resp):
         with pytest.raises(RuntimeError, match="server returned 500"):
             handle(ctx, step)
 
 
 def test_slack_notify_template_handles_nested_context_data() -> None:
-    from solus.modules.output.slack_notify import handle
+    from solux.modules.output.slack_notify import handle
 
     ctx = _make_ctx(
         {
@@ -470,7 +470,7 @@ def test_slack_notify_template_handles_nested_context_data() -> None:
     )
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    with patch("solus.modules.output.slack_notify.requests.post", return_value=mock_resp) as mock_post:
+    with patch("solux.modules.output.slack_notify.requests.post", return_value=mock_resp) as mock_post:
         result = handle(ctx, step)
 
     payload = mock_post.call_args.kwargs["data"]
@@ -482,7 +482,7 @@ def test_slack_notify_template_handles_nested_context_data() -> None:
 
 
 def test_email_inbox_module_spec() -> None:
-    from solus.modules.input.email_inbox import MODULE
+    from solux.modules.input.email_inbox import MODULE
 
     assert MODULE.name == "email_inbox"
     assert MODULE.safety == "trusted_only"
@@ -491,7 +491,7 @@ def test_email_inbox_module_spec() -> None:
 
 
 def test_email_inbox_missing_host_raises() -> None:
-    from solus.modules.input.email_inbox import handle
+    from solux.modules.input.email_inbox import handle
 
     ctx = _make_ctx()
     step = _make_step("input.email_inbox")
@@ -500,7 +500,7 @@ def test_email_inbox_missing_host_raises() -> None:
 
 
 def test_email_inbox_missing_credentials_raises() -> None:
-    from solus.modules.input.email_inbox import handle
+    from solux.modules.input.email_inbox import handle
 
     ctx = _make_ctx()
     step = _make_step("input.email_inbox", {"host": "imap.example.com"})
@@ -512,7 +512,7 @@ def test_email_inbox_missing_credentials_raises() -> None:
 
 
 def test_youtube_playlist_module_spec() -> None:
-    from solus.modules.input.youtube_playlist import MODULE
+    from solux.modules.input.youtube_playlist import MODULE
 
     assert MODULE.name == "youtube_playlist"
     assert MODULE.category == "input"
@@ -521,7 +521,7 @@ def test_youtube_playlist_module_spec() -> None:
 
 
 def test_youtube_playlist_uses_yt_dlp() -> None:
-    from solus.modules.input.youtube_playlist import handle
+    from solux.modules.input.youtube_playlist import handle
 
     ctx = _make_ctx(source="https://www.youtube.com/playlist?list=PLtest")
     step = _make_step("input.youtube_playlist", {"limit": 5})
@@ -532,7 +532,7 @@ def test_youtube_playlist_uses_yt_dlp() -> None:
         '{"url": "https://www.youtube.com/watch?v=abc", "playlist_title": "Test Playlist"}\n'
         '{"url": "https://www.youtube.com/watch?v=def"}\n'
     )
-    with patch("solus.modules.input.youtube_playlist.subprocess.run", return_value=mock_result):
+    with patch("solux.modules.input.youtube_playlist.subprocess.run", return_value=mock_result):
         result = handle(ctx, step)
     assert result.data["video_urls"] == [
         "https://www.youtube.com/watch?v=abc",
@@ -542,13 +542,13 @@ def test_youtube_playlist_uses_yt_dlp() -> None:
 
 
 def test_youtube_playlist_raises_on_nonzero_return_code() -> None:
-    from solus.modules.input.youtube_playlist import handle
+    from solux.modules.input.youtube_playlist import handle
 
     ctx = _make_ctx(source="https://www.youtube.com/playlist?list=PLtest")
     step = _make_step("input.youtube_playlist", {"limit": 5})
     mock_result = MagicMock(returncode=1, stdout="", stderr="yt-dlp error")
 
-    with patch("solus.modules.input.youtube_playlist.subprocess.run", return_value=mock_result):
+    with patch("solux.modules.input.youtube_playlist.subprocess.run", return_value=mock_result):
         with pytest.raises(RuntimeError, match="returned 1"):
             handle(ctx, step)
 
@@ -557,7 +557,7 @@ def test_youtube_playlist_raises_on_nonzero_return_code() -> None:
 
 
 def test_s3_watcher_module_spec() -> None:
-    from solus.modules.input.s3_watcher import MODULE
+    from solux.modules.input.s3_watcher import MODULE
 
     assert MODULE.name == "s3_watcher"
     assert MODULE.safety == "trusted_only"
@@ -566,7 +566,7 @@ def test_s3_watcher_module_spec() -> None:
 
 
 def test_s3_watcher_missing_bucket_raises() -> None:
-    from solus.modules.input.s3_watcher import handle
+    from solux.modules.input.s3_watcher import handle
     import sys
 
     boto3_mock = MagicMock()
@@ -578,7 +578,7 @@ def test_s3_watcher_missing_bucket_raises() -> None:
 
 
 def test_s3_watcher_raises_without_boto3() -> None:
-    from solus.modules.input.s3_watcher import handle
+    from solux.modules.input.s3_watcher import handle
     import sys
 
     with patch.dict(sys.modules, {"boto3": None}):
@@ -592,7 +592,7 @@ def test_s3_watcher_raises_without_boto3() -> None:
 
 
 def test_llm_sentiment_module_spec() -> None:
-    from solus.modules.ai.llm_sentiment import MODULE
+    from solux.modules.ai.llm_sentiment import MODULE
 
     assert MODULE.name == "llm_sentiment"
     assert MODULE.category == "ai"
@@ -601,22 +601,22 @@ def test_llm_sentiment_module_spec() -> None:
 
 
 def test_llm_sentiment_missing_input_raises() -> None:
-    from solus.modules.ai.llm_sentiment import handle
+    from solux.modules.ai.llm_sentiment import handle
 
     ctx = _make_ctx()
     step = _make_step("ai.llm_sentiment")
-    with patch("solus.modules.ai.llm_sentiment.call_ollama_chat", return_value="positive"):
+    with patch("solux.modules.ai.llm_sentiment.call_ollama_chat", return_value="positive"):
         with pytest.raises(RuntimeError, match="missing"):
             handle(ctx, step)
 
 
 def test_llm_sentiment_pos_neg_neu() -> None:
-    from solus.modules.ai.llm_sentiment import handle
+    from solux.modules.ai.llm_sentiment import handle
 
     ctx = _make_ctx({"input_text": "I love this product!"})
     step = _make_step("ai.llm_sentiment", {"scale": "pos_neg_neu"})
     mock_response = '{"label": "positive", "score": 0.92, "explanation": "Very positive tone."}'
-    with patch("solus.modules.ai.llm_sentiment.call_ollama_chat", return_value=mock_response):
+    with patch("solux.modules.ai.llm_sentiment.call_ollama_chat", return_value=mock_response):
         result = handle(ctx, step)
     sentiment = result.data["sentiment"]
     assert isinstance(sentiment, dict)
@@ -625,11 +625,11 @@ def test_llm_sentiment_pos_neg_neu() -> None:
 
 
 def test_llm_sentiment_custom_keys() -> None:
-    from solus.modules.ai.llm_sentiment import handle
+    from solux.modules.ai.llm_sentiment import handle
 
     ctx = _make_ctx({"my_text": "Bad service!"})
     step = _make_step("ai.llm_sentiment", {"input_key": "my_text", "output_key": "my_sentiment"})
-    with patch("solus.modules.ai.llm_sentiment.call_ollama_chat", return_value='{"label": "negative", "score": 0.1}'):
+    with patch("solux.modules.ai.llm_sentiment.call_ollama_chat", return_value='{"label": "negative", "score": 0.1}'):
         result = handle(ctx, step)
     assert "my_sentiment" in result.data
 
@@ -639,7 +639,7 @@ def test_llm_sentiment_custom_keys() -> None:
 
 def test_loader_secrets_interpolation() -> None:
     import os
-    from solus.workflows.loader import _interpolate_secrets
+    from solux.workflows.loader import _interpolate_secrets
 
     os.environ["MY_SECRET"] = "s3cr3t"
     result = _interpolate_secrets("prefix-${env:MY_SECRET}-suffix")
@@ -648,7 +648,7 @@ def test_loader_secrets_interpolation() -> None:
 
 
 def test_loader_secrets_interpolation_dict() -> None:
-    from solus.workflows.loader import _interpolate_secrets
+    from solux.workflows.loader import _interpolate_secrets
     import os
 
     os.environ["API_KEY"] = "key123"
@@ -659,14 +659,14 @@ def test_loader_secrets_interpolation_dict() -> None:
 
 
 def test_loader_secrets_missing_env_empty_string() -> None:
-    from solus.workflows.loader import _interpolate_secrets
+    from solux.workflows.loader import _interpolate_secrets
 
     result = _interpolate_secrets("${env:DOES_NOT_EXIST_XYZ123}")
     assert result == ""
 
 
 def test_loader_parses_timeout_field() -> None:
-    from solus.workflows.loader import _parse_step
+    from solux.workflows.loader import _parse_step
 
     raw = {"name": "mystep", "type": "ai.llm_prompt", "config": {}, "timeout": 30}
     step = _parse_step(raw, 0)
@@ -674,7 +674,7 @@ def test_loader_parses_timeout_field() -> None:
 
 
 def test_loader_invalid_timeout_raises() -> None:
-    from solus.workflows.loader import WorkflowLoadError, _parse_step
+    from solux.workflows.loader import WorkflowLoadError, _parse_step
 
     raw = {"name": "s", "type": "ai.llm_prompt", "config": {}, "timeout": "not-an-int"}
     with pytest.raises(WorkflowLoadError):
@@ -682,7 +682,7 @@ def test_loader_invalid_timeout_raises() -> None:
 
 
 def test_loader_negative_timeout_raises() -> None:
-    from solus.workflows.loader import WorkflowLoadError, _parse_step
+    from solux.workflows.loader import WorkflowLoadError, _parse_step
 
     raw = {"name": "s", "type": "ai.llm_prompt", "config": {}, "timeout": -5}
     with pytest.raises(WorkflowLoadError, match="positive integer"):
@@ -690,7 +690,7 @@ def test_loader_negative_timeout_raises() -> None:
 
 
 def test_loader_zero_timeout_raises() -> None:
-    from solus.workflows.loader import WorkflowLoadError, _parse_step
+    from solux.workflows.loader import WorkflowLoadError, _parse_step
 
     raw = {"name": "s", "type": "ai.llm_prompt", "config": {}, "timeout": 0}
     with pytest.raises(WorkflowLoadError, match="positive integer"):
@@ -698,8 +698,8 @@ def test_loader_zero_timeout_raises() -> None:
 
 
 def test_workflow_to_dict_preserves_timeout_field() -> None:
-    from solus.workflows.loader import workflow_to_dict
-    from solus.workflows.models import Workflow
+    from solux.workflows.loader import workflow_to_dict
+    from solux.workflows.models import Workflow
 
     wf = Workflow(
         name="wf",

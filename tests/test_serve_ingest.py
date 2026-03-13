@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from solus.queueing import read_jobs
-from solus.serve import _build_handler, _build_page
+from solux.queueing import read_jobs
+from solux.serve import _build_handler, _build_page
 
 
 @pytest.fixture()
@@ -118,7 +118,7 @@ def _post_json(port: int, path: str, payload: dict[str, Any]) -> tuple[int, dict
 
 
 def test_ingest_url_enqueues_and_redirects(server, monkeypatch):
-    monkeypatch.setattr("solus.serve.api.ensure_background_worker", lambda _: False)
+    monkeypatch.setattr("solux.serve.api.ensure_background_worker", lambda _: False)
     status, headers, _ = _post_form(
         server.port, "/ingest-url", "url=https%3A%2F%2Fexample.com%2Faudio.mp3&mode=tldr&format=text"
     )
@@ -139,7 +139,7 @@ def test_ingest_url_empty_returns_400(server):
 
 
 def test_ingest_file_saves_and_enqueues(server, monkeypatch):
-    monkeypatch.setattr("solus.serve.api.ensure_background_worker", lambda _: False)
+    monkeypatch.setattr("solux.serve.api.ensure_background_worker", lambda _: False)
     fake_audio = b"\x00" * 256
     status, headers, _ = _post_multipart(
         server.port,
@@ -167,7 +167,7 @@ def test_ingest_file_saves_and_enqueues(server, monkeypatch):
 
 def test_ingest_file_json_returns_job_id(server, monkeypatch):
     """When Accept: application/json, ingest-file returns a JSON body with job_id."""
-    monkeypatch.setattr("solus.serve.api.ensure_background_worker", lambda _: False)
+    monkeypatch.setattr("solux.serve.api.ensure_background_worker", lambda _: False)
     fake_pdf = b"%PDF-1.4 fake content"
     boundary = "----TestBoundary12345"
     parts: list[bytes] = []
@@ -216,7 +216,7 @@ def test_ingest_file_json_returns_job_id(server, monkeypatch):
 
 def test_handle_ingest_file_returns_job_id_tuple(tmp_path):
     """handle_ingest_file returns (True, job_id) tuple."""
-    from solus.serve.api import handle_ingest_file
+    from solux.serve.api import handle_ingest_file
 
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
@@ -319,7 +319,7 @@ def test_workflow_editor_prefills_builtin_yaml(server):
 
 def test_worker_start_redirects(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.start_background_worker",
+        "solux.serve.api.start_background_worker",
         lambda cache_dir, **kw: (True, 12345, "started"),
     )
     status, headers, _ = _post_form(server.port, "/worker-start", "")
@@ -329,7 +329,7 @@ def test_worker_start_redirects(server, monkeypatch):
 
 def test_worker_start_already_running_redirects(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.start_background_worker",
+        "solux.serve.api.start_background_worker",
         lambda cache_dir, **kw: (False, 99, "already-running"),
     )
     status, headers, _ = _post_form(server.port, "/worker-start", "")
@@ -339,7 +339,7 @@ def test_worker_start_already_running_redirects(server, monkeypatch):
 
 def test_worker_stop_not_running_redirects(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.stop_background_worker",
+        "solux.serve.api.stop_background_worker",
         lambda cache_dir: (False, "not-running"),
     )
     status, headers, _ = _post_form(server.port, "/worker-stop", "")
@@ -349,7 +349,7 @@ def test_worker_stop_not_running_redirects(server, monkeypatch):
 
 def test_worker_stop_stopped_redirects(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.stop_background_worker",
+        "solux.serve.api.stop_background_worker",
         lambda cache_dir: (True, "stopped"),
     )
     status, headers, _ = _post_form(server.port, "/worker-stop", "")
@@ -359,7 +359,7 @@ def test_worker_stop_stopped_redirects(server, monkeypatch):
 
 def test_worker_stop_timeout_returns_504(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.stop_background_worker",
+        "solux.serve.api.stop_background_worker",
         lambda cache_dir: (False, "timeout"),
     )
     status, _, body = _post_form(server.port, "/worker-stop", "")
@@ -369,11 +369,11 @@ def test_worker_stop_timeout_returns_504(server, monkeypatch):
 
 def test_worker_restart_redirects_to_next(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.stop_background_worker",
+        "solux.serve.api.stop_background_worker",
         lambda cache_dir: (True, "stopped"),
     )
     monkeypatch.setattr(
-        "solus.serve.api.start_background_worker",
+        "solux.serve.api.start_background_worker",
         lambda cache_dir, **kw: (True, 12345, "started"),
     )
     status, headers, _ = _post_form(server.port, "/worker-restart", "next=%2Ftriggers")
@@ -383,7 +383,7 @@ def test_worker_restart_redirects_to_next(server, monkeypatch):
 
 def test_worker_restart_timeout_returns_504(server, monkeypatch):
     monkeypatch.setattr(
-        "solus.serve.api.stop_background_worker",
+        "solux.serve.api.stop_background_worker",
         lambda cache_dir: (False, "timeout"),
     )
     status, _, body = _post_form(server.port, "/worker-restart", "next=%2Ftriggers")
@@ -404,7 +404,7 @@ def test_post_rejects_cross_site_origin(server) -> None:
 
 
 def test_trigger_webhook_honors_upload_size_limit(server, monkeypatch):
-    monkeypatch.setattr("solus.serve.handler._MAX_WEBHOOK_BYTES", 10)
+    monkeypatch.setattr("solux.serve.handler._MAX_WEBHOOK_BYTES", 10)
     status, _, body = _post_json(
         server.port,
         "/api/trigger/webpage_summary",

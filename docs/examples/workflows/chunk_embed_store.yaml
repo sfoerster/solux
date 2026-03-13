@@ -10,7 +10,7 @@
 # This sub-workflow ensures embed + store happen atomically per chunk,
 # avoiding the stale-embedding issue that arises from two separate foreach steps.
 #
-# Dependencies: pip install 'solus[vector]'
+# Dependencies: pip install 'solux[vector]'
 
 name: chunk_embed_store
 description: "Embed a single text chunk (_item) and upsert into ChromaDB (research_corpus)"

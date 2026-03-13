@@ -1,10 +1,10 @@
-"""Tests for the RBAC module (solus.serve.rbac)."""
+"""Tests for the RBAC module (solux.serve.rbac)."""
 
 from __future__ import annotations
 
 import pytest
 
-from solus.serve.rbac import (
+from solux.serve.rbac import (
     PERMISSIONS,
     check_permission,
     extract_roles,

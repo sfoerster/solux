@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.reload import FileWatcher, HotReloader
+from solux.reload import FileWatcher, HotReloader
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def test_hot_reloader_on_reload_callback(tmp_path: Path) -> None:
     reloader = HotReloader(modules_dir=d, interval=0.05, on_reload=on_reload)
 
     with patch.object(reloader._watcher, "check", return_value=True):
-        with patch("solus.reload.HotReloader._reload") as mock_reload:
+        with patch("solux.reload.HotReloader._reload") as mock_reload:
             reloader.start()
             time.sleep(0.2)
             reloader.stop()
@@ -193,7 +193,7 @@ def test_hot_reloader_reload_calls_discover(tmp_path: Path) -> None:
     mock_spec = MagicMock()
     mock_spec.step_type = "test.type"
 
-    with patch("solus.reload.HotReloader._reload") as mock_reload:
+    with patch("solux.reload.HotReloader._reload") as mock_reload:
         reloader._reload = mock_reload
         # Manually trigger _reload
         reloader._reload()
@@ -201,7 +201,7 @@ def test_hot_reloader_reload_calls_discover(tmp_path: Path) -> None:
 
 
 def test_hot_reloader_registers_modules_with_step_type_and_aliases(tmp_path: Path) -> None:
-    from solus.modules.spec import ModuleSpec
+    from solux.modules.spec import ModuleSpec
 
     d = tmp_path / "modules.d"
     d.mkdir()
@@ -228,8 +228,8 @@ def test_hot_reloader_registers_modules_with_step_type_and_aliases(tmp_path: Pat
 
     recorder = _RegistryRecorder()
 
-    with patch("solus.modules.discovery.discover_modules", return_value=[spec]):
-        with patch("solus.workflows.registry.global_registry", recorder):
+    with patch("solux.modules.discovery.discover_modules", return_value=[spec]):
+        with patch("solux.workflows.registry.global_registry", recorder):
             reloader._reload()
 
     assert any(

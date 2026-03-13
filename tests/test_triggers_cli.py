@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from solus.cli import main
+from solux.cli import main
 
 
 def _write_config(tmp_path: Path, *, workflows_dir: Path, triggers_dir: Path) -> None:
-    config_dir = tmp_path / ".config" / "solus"
+    config_dir = tmp_path / ".config" / "solux"
     config_dir.mkdir(parents=True, exist_ok=True)
     (config_dir / "config.toml").write_text(
         (f'[workflows]\ndir = "{workflows_dir}"\n\n[triggers]\ndir = "{triggers_dir}"\n'),

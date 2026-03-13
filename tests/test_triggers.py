@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from solus.triggers.loader import load_triggers
-from solus.triggers.spec import Trigger
+from solux.triggers.loader import load_triggers
+from solux.triggers.spec import Trigger
 
 
 # ---------------------------------------------------------------------------
@@ -272,7 +272,7 @@ def test_folder_watch_trigger_detects_new_files(tmp_path: Path) -> None:
         enqueued.extend(sources)
         return [{"job_id": f"job_{s}"} for s in sources]
 
-    from solus.triggers.runner import FolderWatchTrigger, _state_db, _is_seen, _mark_seen
+    from solux.triggers.runner import FolderWatchTrigger, _state_db, _is_seen, _mark_seen
 
     # Test state DB tracking directly
     conn = _state_db(state_db)
@@ -320,10 +320,10 @@ def test_folder_watch_trigger_runs_and_enqueues(tmp_path: Path) -> None:
         stop_event.set()  # Stop after first enqueue
         return []
 
-    from solus.triggers.folder_watch import FolderWatchTrigger
+    from solux.triggers.folder_watch import FolderWatchTrigger
 
     t = FolderWatchTrigger(trigger, tmp_path, state_db, stop_event)
-    with patch("solus.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
+    with patch("solux.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
         thread = threading.Thread(target=t.run, daemon=True)
         thread.start()
         thread.join(timeout=2.0)
@@ -359,10 +359,10 @@ def test_folder_watch_trigger_pattern_filter(tmp_path: Path) -> None:
         stop_event.set()
         return []
 
-    from solus.triggers.folder_watch import FolderWatchTrigger
+    from solux.triggers.folder_watch import FolderWatchTrigger
 
     t = FolderWatchTrigger(trigger, tmp_path, state_db, stop_event)
-    with patch("solus.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
+    with patch("solux.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
         thread = threading.Thread(target=t.run, daemon=True)
         thread.start()
         thread.join(timeout=2.0)
@@ -402,12 +402,12 @@ def test_folder_watch_trigger_skips_symlink_outside_watch_dir(tmp_path: Path) ->
         stop_event.set()
         return []
 
-    from solus.triggers.folder_watch import FolderWatchTrigger
+    from solux.triggers.folder_watch import FolderWatchTrigger
 
     t = FolderWatchTrigger(trigger, tmp_path, state_db, stop_event)
     # Run one iteration then stop
     stop_event.set()
-    with patch("solus.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
+    with patch("solux.triggers.folder_watch.enqueue_jobs", side_effect=mock_enqueue):
         t.run()
 
     # The symlink escape.mp3 resolves outside watch_dir → must NOT be enqueued

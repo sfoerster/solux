@@ -1,6 +1,6 @@
 # Use Case 1 — Watch folder for new audio files (MP3)
 #
-# Solus polls ~/Downloads/Podcasts every 30 seconds for new .mp3 files.
+# Solux polls ~/Downloads/Podcasts every 30 seconds for new .mp3 files.
 # Each new file is automatically queued for the podcast_summary workflow.
 #
 # To also watch for MP4 files (YouTube downloads), create a second trigger

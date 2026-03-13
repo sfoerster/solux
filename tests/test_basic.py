@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from solus.cli import parse_args
-from solus.config import ConfigError, load_config
+from solux.cli import parse_args
+from solux.config import ConfigError, load_config
 
 
 def test_load_config_from_toml(tmp_path: Path) -> None:
@@ -11,7 +11,7 @@ def test_load_config_from_toml(tmp_path: Path) -> None:
     config_path.write_text(
         """
 [paths]
-cache_dir = "~/custom-solus-cache"
+cache_dir = "~/custom-solux-cache"
 
 [whisper]
 threads = 3
@@ -20,18 +20,18 @@ threads = 3
 model = "llama3.1:8b"
 
 [triggers]
-dir = "~/custom-solus-triggers"
+dir = "~/custom-solux-triggers"
 """.strip(),
         encoding="utf-8",
     )
 
     config = load_config(config_path)
-    assert config.paths.cache_dir.name == "custom-solus-cache"
+    assert config.paths.cache_dir.name == "custom-solux-cache"
     assert config.whisper.threads == 3
     assert config.ollama.model == "llama3.1:8b"
     assert config.ffmpeg.binary == "ffmpeg"
     assert config.yt_dlp.binary == "yt-dlp"
-    assert config.triggers_dir.name == "custom-solus-triggers"
+    assert config.triggers_dir.name == "custom-solux-triggers"
 
 
 def test_parse_args_defaults() -> None:
@@ -244,7 +244,7 @@ webhook_rate_limit = "nope"
 
 
 def test_build_logger_returns_isolated_instances() -> None:
-    from solus.pipeline import _build_logger
+    from solux.pipeline import _build_logger
 
     logger_a = _build_logger(None)
     logger_b = _build_logger(None)
@@ -255,7 +255,7 @@ def test_build_logger_returns_isolated_instances() -> None:
 
 def test_cmd_serve_passes_loaded_config_to_server(tmp_path: Path, monkeypatch) -> None:
     from argparse import Namespace
-    from solus.cli.server import cmd_serve
+    from solux.cli.server import cmd_serve
 
     cfg_path = tmp_path / "config.toml"
     workflows_dir = tmp_path / "workflows"
@@ -270,7 +270,7 @@ dir = "{workflows_dir}"
         encoding="utf-8",
     )
     config = load_config(cfg_path)
-    monkeypatch.setattr("solus.cli.server.load_config", lambda: config)
+    monkeypatch.setattr("solux.cli.server.load_config", lambda: config)
 
     captured: dict[str, object] = {}
 
@@ -283,7 +283,7 @@ dir = "{workflows_dir}"
         captured["workflows_dir"] = workflows_dir
         return 0
 
-    monkeypatch.setattr("solus.cli.server.run_serve", fake_run_serve)
+    monkeypatch.setattr("solux.cli.server.run_serve", fake_run_serve)
     rc = cmd_serve(Namespace(host="127.0.0.1", port=9999))
     assert rc == 0
     assert captured["config"] is config

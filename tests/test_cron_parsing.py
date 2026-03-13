@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from solus.triggers.cron import _cron_matches
+from solux.triggers.cron import _cron_matches
 
 
 def _dt(minute=0, hour=0, day=1, month=1, year=2026, weekday_target=None):

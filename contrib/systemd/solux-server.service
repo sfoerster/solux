@@ -1,0 +1,26 @@
+[Unit]
+Description=Solux AI Workflow Engine — Web Server
+After=network.target ollama.service
+Wants=solux-worker.service
+
+[Service]
+Type=simple
+User=solux
+Group=solux
+ExecStart=/usr/bin/env solux serve --host 127.0.0.1 --port 8765
+Restart=on-failure
+RestartSec=5
+
+# Paths
+Environment=HOME=/home/solux
+WorkingDirectory=/home/solux
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/solux/.local/share/solux /home/solux/.config/solux
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

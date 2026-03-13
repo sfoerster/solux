@@ -1,4 +1,4 @@
-# Contributing to Solus
+# Contributing to Solux
 
 ## Development Setup
 
@@ -16,7 +16,7 @@ Run these before opening a merge request:
 ```bash
 ruff format src/ tests/
 ruff check src/ tests/
-mypy src/solus/
+mypy src/solux/
 pytest
 ```
 

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from solus.modules.spec import Dependency, ModuleSpec
-from solus.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
-from solus.doctor import run_doctor
-from solus.workflows.models import Step, Workflow
-from solus.workflows.registry import StepRegistry
+from solux.modules.spec import Dependency, ModuleSpec
+from solux.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
+from solux.doctor import run_doctor
+from solux.workflows.models import Step, Workflow
+from solux.workflows.registry import StepRegistry
 
 
 def _config(tmp_path: Path) -> Config:
@@ -38,16 +38,16 @@ def test_run_doctor_returns_failure_when_module_dependency_check_sets_missing(mo
         def json() -> dict:
             return {"models": [{"name": "qwen3:8b"}]}
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor._find_binary", lambda _binary: "/bin/true")
-    monkeypatch.setattr("solus.doctor._check_binary_runs", lambda *_args, **_kwargs: (True, ""))
-    monkeypatch.setattr("solus.doctor.requests.get", lambda *_args, **_kwargs: _Resp())
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor._find_binary", lambda _binary: "/bin/true")
+    monkeypatch.setattr("solux.doctor._check_binary_runs", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr("solux.doctor.requests.get", lambda *_args, **_kwargs: _Resp())
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
 
     def _mark_missing(missing_required_ref, **_kwargs):
         missing_required_ref[0] = True
 
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", _mark_missing)
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", _mark_missing)
 
     assert run_doctor(cfg) == 1
 
@@ -88,19 +88,19 @@ def test_run_doctor_workflow_scope_skips_audio_checks(monkeypatch, tmp_path: Pat
         ),
     )
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
-    monkeypatch.setattr("solus.doctor.load_workflow", lambda *_args, **_kwargs: workflow)
-    monkeypatch.setattr("solus.doctor.build_registry", lambda **_kwargs: registry)
-    monkeypatch.setattr("solus.doctor._check_ollama", lambda _config, **_kwargs: False)
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor.load_workflow", lambda *_args, **_kwargs: workflow)
+    monkeypatch.setattr("solux.doctor.build_registry", lambda **_kwargs: registry)
+    monkeypatch.setattr("solux.doctor._check_ollama", lambda _config, **_kwargs: False)
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     def _unexpected(*_args, **_kwargs):
         raise AssertionError("audio dependency check should not run for webpage_summary workflow scope")
 
-    monkeypatch.setattr("solus.doctor._check_yt_dlp", _unexpected)
-    monkeypatch.setattr("solus.doctor._check_ffmpeg", _unexpected)
-    monkeypatch.setattr("solus.doctor._check_whisper", _unexpected)
+    monkeypatch.setattr("solux.doctor._check_yt_dlp", _unexpected)
+    monkeypatch.setattr("solux.doctor._check_ffmpeg", _unexpected)
+    monkeypatch.setattr("solux.doctor._check_whisper", _unexpected)
 
     assert run_doctor(cfg, workflow_name="webpage_summary") == 0
 
@@ -118,10 +118,10 @@ def test_run_doctor_fix_flag_shows_fix_prefix(monkeypatch, tmp_path: Path, capsy
         config_exists=False,
     )
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
-    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: (set(), [], []))
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor._collect_scoped_deps", lambda *_a, **_kw: (set(), [], []))
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     run_doctor(cfg, fix=True)
     captured = capsys.readouterr()
@@ -133,8 +133,8 @@ def test_run_doctor_check_all_checks_everything(monkeypatch, tmp_path: Path) -> 
     cfg = _config(tmp_path)
     checked: list[str] = []
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
 
     def _track(name):
         def _inner(_config, **_kwargs):
@@ -143,11 +143,11 @@ def test_run_doctor_check_all_checks_everything(monkeypatch, tmp_path: Path) -> 
 
         return _inner
 
-    monkeypatch.setattr("solus.doctor._check_yt_dlp", _track("yt_dlp"))
-    monkeypatch.setattr("solus.doctor._check_ffmpeg", _track("ffmpeg"))
-    monkeypatch.setattr("solus.doctor._check_whisper", _track("whisper"))
-    monkeypatch.setattr("solus.doctor._check_ollama", _track("ollama"))
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+    monkeypatch.setattr("solux.doctor._check_yt_dlp", _track("yt_dlp"))
+    monkeypatch.setattr("solux.doctor._check_ffmpeg", _track("ffmpeg"))
+    monkeypatch.setattr("solux.doctor._check_whisper", _track("whisper"))
+    monkeypatch.setattr("solux.doctor._check_ollama", _track("ollama"))
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     run_doctor(cfg, check_all=True)
     assert sorted(checked) == ["ffmpeg", "ollama", "whisper", "yt_dlp"]
@@ -158,10 +158,10 @@ def test_run_doctor_scoped_default_skips_unneeded_deps(monkeypatch, tmp_path: Pa
     cfg = _config(tmp_path)
     checked: list[str] = []
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
     # Only ollama in scoped deps (webpage_summary uses ollama)
-    monkeypatch.setattr("solus.doctor._collect_scoped_deps", lambda *_a, **_kw: ({"ollama"}, [], []))
+    monkeypatch.setattr("solux.doctor._collect_scoped_deps", lambda *_a, **_kw: ({"ollama"}, [], []))
 
     def _track(name):
         def _inner(_config, **_kwargs):
@@ -170,11 +170,11 @@ def test_run_doctor_scoped_default_skips_unneeded_deps(monkeypatch, tmp_path: Pa
 
         return _inner
 
-    monkeypatch.setattr("solus.doctor._check_yt_dlp", _track("yt_dlp"))
-    monkeypatch.setattr("solus.doctor._check_ffmpeg", _track("ffmpeg"))
-    monkeypatch.setattr("solus.doctor._check_whisper", _track("whisper"))
-    monkeypatch.setattr("solus.doctor._check_ollama", _track("ollama"))
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+    monkeypatch.setattr("solux.doctor._check_yt_dlp", _track("yt_dlp"))
+    monkeypatch.setattr("solux.doctor._check_ffmpeg", _track("ffmpeg"))
+    monkeypatch.setattr("solux.doctor._check_whisper", _track("whisper"))
+    monkeypatch.setattr("solux.doctor._check_ollama", _track("ollama"))
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     run_doctor(cfg)
     assert checked == ["ollama"]
@@ -184,12 +184,12 @@ def test_run_doctor_scoped_default_fails_on_unknown_module_types(monkeypatch, tm
     """Scoped mode should fail if configured workflows contain unknown step types."""
     cfg = _config(tmp_path)
 
-    monkeypatch.setattr("solus.doctor.ensure_dir", lambda path: path)
-    monkeypatch.setattr("solus.doctor.list_workflows", lambda **_kwargs: ([], []))
+    monkeypatch.setattr("solux.doctor.ensure_dir", lambda path: path)
+    monkeypatch.setattr("solux.doctor.list_workflows", lambda **_kwargs: ([], []))
     monkeypatch.setattr(
-        "solus.doctor._collect_scoped_deps",
+        "solux.doctor._collect_scoped_deps",
         lambda *_a, **_kw: (set(), [], ["Workflow 'broken' step 'x' uses unknown module type 'totally.unknown'"]),
     )
-    monkeypatch.setattr("solus.doctor._check_module_dependencies", lambda **_kwargs: None)
+    monkeypatch.setattr("solux.doctor._check_module_dependencies", lambda **_kwargs: None)
 
     assert run_doctor(cfg) == 1

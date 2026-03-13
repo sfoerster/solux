@@ -1,0 +1,25 @@
+[Unit]
+Description=Solux AI Workflow Engine — Background Worker
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=solux
+Group=solux
+ExecStart=/usr/bin/env solux worker start --_run-loop --workers 2
+Restart=on-failure
+RestartSec=10
+
+# Paths
+Environment=HOME=/home/solux
+WorkingDirectory=/home/solux
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/solux/.local/share/solux /home/solux/.config/solux
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

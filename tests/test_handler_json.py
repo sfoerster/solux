@@ -9,8 +9,8 @@ from threading import Thread
 
 import pytest
 
-from solus.audit import AuditLogger
-from solus.serve import _build_handler
+from solux.audit import AuditLogger
+from solux.serve import _build_handler
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────
@@ -273,7 +273,7 @@ class TestJSONContentNegotiation:
         assert "Invalid" in data.get("error", "")
 
     def test_job_detail_returns_job(self, server) -> None:
-        from solus.queueing import enqueue_jobs
+        from solux.queueing import enqueue_jobs
 
         created = enqueue_jobs(server.cache_dir, ["test.pdf"], workflow_name="clinical_doc_triage")
         job_id = created[0]["job_id"]
@@ -285,8 +285,8 @@ class TestJSONContentNegotiation:
         assert data["status"] == "pending"
 
     def test_job_detail_includes_context(self, server) -> None:
-        from solus.queueing import enqueue_jobs, update_job
-        from solus.paths import source_dir
+        from solux.queueing import enqueue_jobs, update_job
+        from solux.paths import source_dir
 
         created = enqueue_jobs(server.cache_dir, ["ctx-test.pdf"], workflow_name="test_wf")
         job_id = created[0]["job_id"]
@@ -304,8 +304,8 @@ class TestJSONContentNegotiation:
         assert data["context"]["summary"] == "All normal"
 
     def test_job_detail_includes_result_files(self, server) -> None:
-        from solus.queueing import enqueue_jobs, update_job
-        from solus.paths import source_dir
+        from solux.queueing import enqueue_jobs, update_job
+        from solux.paths import source_dir
 
         created = enqueue_jobs(server.cache_dir, ["files-test.pdf"], workflow_name="test_wf")
         job_id = created[0]["job_id"]

@@ -8,7 +8,7 @@
 #
 # When called from a foreach loop, _item is the current chunk string.
 #
-# Dependencies: pip install 'solus[vector]'
+# Dependencies: pip install 'solux[vector]'
 
 name: embed_one_chunk
 description: "Embed a single text chunk (_item) and upsert into ChromaDB (org_knowledge_base)"

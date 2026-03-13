@@ -5,13 +5,13 @@
 # metadata (title, authors, date, topic, key claims), and writes a
 # formatted note with YAML frontmatter into an Obsidian vault.
 #
-# Required environment variables (set in ~/.config/solus/.env):
+# Required environment variables (set in ~/.config/solux/.env):
 #   OBSIDIAN_VAULT_PATH — absolute path to your Obsidian vault root
 #
 # Trigger: see triggers.d/watch_pdfs.yaml
-# Manual run: solus run --workflow pdf_to_obsidian /path/to/file.pdf
+# Manual run: solux run --workflow pdf_to_obsidian /path/to/file.pdf
 #
-# Dependencies: pip install 'solus[pdf]'
+# Dependencies: pip install 'solux[pdf]'
 
 name: pdf_to_obsidian
 description: "Extract, summarize, and file a PDF as a structured Obsidian note"

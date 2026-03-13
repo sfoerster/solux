@@ -5,17 +5,17 @@
 # Ollama and stores them in a ChromaDB collection for semantic search.
 # The document summary is also written to an Obsidian vault.
 #
-# Required environment variables (set in ~/.config/solus/.env):
+# Required environment variables (set in ~/.config/solux/.env):
 #   OBSIDIAN_VAULT_PATH
 #
 # Usage (manual — paste any URL):
-#   solus run --workflow article_index "https://example.com/interesting-post"
+#   solux run --workflow article_index "https://example.com/interesting-post"
 #
 # To query the vector store after indexing, use a tool like ChromaDB's Python
 # client directly, or build a query workflow with ai.embeddings + a custom
 # retrieval module.
 #
-# Dependencies: pip install 'solus[vector]'
+# Dependencies: pip install 'solux[vector]'
 # Sub-workflow:  chunk_embed_store.yaml (must be present in workflows.d/)
 
 name: article_index

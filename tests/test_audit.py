@@ -1,4 +1,4 @@
-"""Tests for the audit logging module (solus.audit)."""
+"""Tests for the audit logging module (solux.audit)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from solus.audit import AuditLogger
+from solux.audit import AuditLogger
 
 
 @pytest.fixture()
@@ -401,7 +401,7 @@ class TestHMACChain:
 
 class TestSQLCipherFallback:
     def test_db_key_env_fallback_without_pysqlcipher3(self, tmp_path: Path) -> None:
-        """When SOLUS_AUDIT_DB_KEY is set but pysqlcipher3 is not installed,
+        """When SOLUX_AUDIT_DB_KEY is set but pysqlcipher3 is not installed,
         AuditLogger should fall back to plain SQLite and still work."""
         logger = AuditLogger(tmp_path, enabled=True)
         # Manually set _db_key to simulate env var being set

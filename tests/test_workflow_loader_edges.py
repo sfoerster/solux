@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from solus.workflows.loader import (
+from solux.workflows.loader import (
     WorkflowLoadError,
     _parse_params,
     _parse_step,
@@ -17,7 +17,7 @@ from solus.workflows.loader import (
     list_workflows,
     workflow_to_dict,
 )
-from solus.workflows.models import Step, Workflow, WorkflowParam
+from solux.workflows.models import Step, Workflow, WorkflowParam
 
 
 # ---------------------------------------------------------------------------

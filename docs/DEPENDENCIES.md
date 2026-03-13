@@ -1,8 +1,8 @@
-# Solus Dependencies Guide
+# Solux Dependencies Guide
 
-Solus runs entirely on your local machine with no cloud API keys. This guide covers installing and configuring the four core external tools—Ollama, whisper.cpp, ffmpeg, and yt-dlp—plus the optional extras for OCR, vector search, S3, and OIDC auth.
+Solux runs entirely on your local machine with no cloud API keys. This guide covers installing and configuring the four core external tools—Ollama, whisper.cpp, ffmpeg, and yt-dlp—plus the optional extras for OCR, vector search, S3, and OIDC auth.
 
-After installing everything, run `solus doctor` to verify the setup.
+After installing everything, run `solux doctor` to verify the setup.
 
 ---
 
@@ -18,7 +18,7 @@ After installing everything, run `solus doctor` to verify the setup.
 8. [Optional: ChromaDB (vector store)](#optional-chromadb-vector-store)
 9. [Optional: boto3 (S3 / MinIO)](#optional-boto3-s3--minio)
 10. [Optional: OIDC auth (web UI)](#optional-oidc-auth-web-ui)
-11. [Verifying with `solus doctor`](#verifying-with-solus-doctor)
+11. [Verifying with `solux doctor`](#verifying-with-solux-doctor)
 12. [Troubleshooting](#troubleshooting)
 
 ---
@@ -37,13 +37,13 @@ After installing everything, run `solus doctor` to verify the setup.
 | boto3 | S3 / MinIO (optional) | pip |
 | PyJWT + cryptography | OIDC web UI auth (optional) | pip |
 
-> **Note:** `defusedxml` is a core Python dependency installed automatically with Solus. It provides safe XML parsing (prevents XXE/billion-laughs attacks) for RSS and Atom feed handling.
+> **Note:** `defusedxml` is a core Python dependency installed automatically with Solux. It provides safe XML parsing (prevents XXE/billion-laughs attacks) for RSS and Atom feed handling.
 
 ---
 
 ## Python
 
-Solus requires **Python 3.11 or newer**.
+Solux requires **Python 3.11 or newer**.
 
 Check your version:
 
@@ -70,12 +70,12 @@ pyenv install 3.12
 pyenv global 3.12
 ```
 
-> **Note:** Solus has built-in pyenv awareness. When it looks up tool binaries (ffmpeg, yt-dlp, etc.) it automatically resolves pyenv shims to their real paths, so you won't run into "shim loop" errors.
+> **Note:** Solux has built-in pyenv awareness. When it looks up tool binaries (ffmpeg, yt-dlp, etc.) it automatically resolves pyenv shims to their real paths, so you won't run into "shim loop" errors.
 
-### Install Solus itself
+### Install Solux itself
 
 ```bash
-cd /path/to/solus
+cd /path/to/solux
 pip install -e .
 ```
 
@@ -83,7 +83,7 @@ pip install -e .
 
 ## Ollama (local LLM)
 
-Ollama serves local language models over a simple REST API. Solus uses it for all `ai.llm_*` steps and `ai.embeddings`.
+Ollama serves local language models over a simple REST API. Solux uses it for all `ai.llm_*` steps and `ai.embeddings`.
 
 ### Install Ollama
 
@@ -125,7 +125,7 @@ Ollama listens on `http://localhost:11434` by default.
 
 ### Pull a model
 
-Solus defaults to `qwen3:8b`. Pull it before running any AI steps:
+Solux defaults to `qwen3:8b`. Pull it before running any AI steps:
 
 ```bash
 ollama pull qwen3:8b
@@ -153,9 +153,9 @@ List all pulled models:
 ollama list
 ```
 
-### Configure Solus to use Ollama
+### Configure Solux to use Ollama
 
-In `~/.config/solus/config.toml`:
+In `~/.config/solux/config.toml`:
 
 ```toml
 [ollama]
@@ -169,7 +169,7 @@ model    = "qwen3:8b"                 # Any model you've pulled
 To use a non-default model for a single run:
 
 ```bash
-solus run episode.mp3 --model llama3.2:3b
+solux run episode.mp3 --model llama3.2:3b
 ```
 
 ### Running Ollama on a remote machine
@@ -181,7 +181,7 @@ If Ollama runs on a different host (e.g., a NAS or GPU server):
 OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-Then in Solus config:
+Then in Solux config:
 
 ```toml
 [ollama]
@@ -192,7 +192,7 @@ base_url = "http://192.168.1.50:11434"
 
 ## whisper.cpp (transcription)
 
-[whisper.cpp](https://github.com/ggerganov/whisper.cpp) is a C++ port of OpenAI Whisper optimized for CPU and Apple Silicon. Solus calls the `whisper-cli` binary it produces.
+[whisper.cpp](https://github.com/ggerganov/whisper.cpp) is a C++ port of OpenAI Whisper optimized for CPU and Apple Silicon. Solux calls the `whisper-cli` binary it produces.
 
 ### Build from source
 
@@ -221,7 +221,7 @@ The binary is at `build/bin/whisper-cli`. You can install it system-wide:
 sudo cp build/bin/whisper-cli /usr/local/bin/
 ```
 
-Or leave it in place and point Solus at it via config (see below).
+Or leave it in place and point Solux at it via config (see below).
 
 **macOS with Metal (GPU acceleration):**
 
@@ -264,9 +264,9 @@ wget -O ~/.local/share/whisper/ggml-medium.en.bin \
   "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin"
 ```
 
-### Configure Solus to use whisper.cpp
+### Configure Solux to use whisper.cpp
 
-In `~/.config/solus/config.toml`:
+In `~/.config/solux/config.toml`:
 
 ```toml
 [whisper]
@@ -277,7 +277,7 @@ model_path = "~/.local/share/whisper/ggml-medium.en.bin"
 threads    = 4    # Number of CPU threads; default is your CPU core count
 ```
 
-Solus also checks these fallback locations automatically if `cli_path` is not set:
+Solux also checks these fallback locations automatically if `cli_path` is not set:
 
 - `~/src/whisper.cpp/build/bin/whisper-cli`
 - `~/whisper.cpp/build/bin/whisper-cli`
@@ -289,15 +289,15 @@ And these model fallback locations if `model_path` is not set:
 
 Model preference order (first found wins): `ggml-medium.bin`, `ggml-base.bin`, `ggml-small.bin`, `ggml-large-v3.bin`, `ggml-large.bin`.
 
-### How Solus calls whisper-cli
+### How Solux calls whisper-cli
 
-For reference, Solus runs:
+For reference, Solux runs:
 
 ```
 whisper-cli -m <model_path> -f <input.wav> -otxt -of <output_base> -t <threads>
 ```
 
-The `-otxt` flag writes a `.txt` file alongside the WAV. Solus reads that file as the transcript.
+The `-otxt` flag writes a `.txt` file alongside the WAV. Solux reads that file as the transcript.
 
 ---
 
@@ -345,18 +345,18 @@ Verify installation:
 ffmpeg -version
 ```
 
-### Configure Solus
+### Configure Solux
 
-By default Solus looks for `ffmpeg` on your `PATH`. If it's installed somewhere unusual:
+By default Solux looks for `ffmpeg` on your `PATH`. If it's installed somewhere unusual:
 
 ```toml
 [ffmpeg]
 binary = "/opt/homebrew/bin/ffmpeg"
 ```
 
-### How Solus calls ffmpeg
+### How Solux calls ffmpeg
 
-Solus runs:
+Solux runs:
 
 ```
 ffmpeg -y -i <input> -ar 16000 -ac 1 -c:a pcm_s16le <output.wav>
@@ -370,7 +370,7 @@ ffmpeg -y -i <input> -ar 16000 -ac 1 -c:a pcm_s16le <output.wav>
 
 ## yt-dlp (audio/video download)
 
-yt-dlp downloads audio from YouTube, podcast feeds, SoundCloud, and hundreds of other sites. Solus uses it in the `input.source_fetch` module.
+yt-dlp downloads audio from YouTube, podcast feeds, SoundCloud, and hundreds of other sites. Solux uses it in the `input.source_fetch` module.
 
 ### Install yt-dlp
 
@@ -406,16 +406,16 @@ Verify installation:
 yt-dlp --version
 ```
 
-### Configure Solus
+### Configure Solux
 
-By default Solus looks for `yt-dlp` on your `PATH`. Override if needed:
+By default Solux looks for `yt-dlp` on your `PATH`. Override if needed:
 
 ```toml
 [yt_dlp]
 binary = "/home/user/.local/bin/yt-dlp"
 ```
 
-### How Solus calls yt-dlp
+### How Solux calls yt-dlp
 
 For single-source audio download:
 
@@ -461,7 +461,7 @@ Download the installer from the [UB Mannheim build](https://github.com/UB-Mannhe
 ### Install the Python wrapper
 
 ```bash
-pip install 'solus[ocr]'
+pip install 'solux[ocr]'
 # Installs: pytesseract, Pillow
 ```
 
@@ -501,11 +501,11 @@ Required only for the `output.vector_store` and `ai.embeddings` → store pipeli
 ### Install
 
 ```bash
-pip install 'solus[vector]'
+pip install 'solux[vector]'
 # Installs: chromadb
 ```
 
-ChromaDB runs as an embedded library with no separate server needed. Solus stores the database at `~/.local/share/solus/chroma/` by default, configurable per workflow step.
+ChromaDB runs as an embedded library with no separate server needed. Solux stores the database at `~/.local/share/solux/chroma/` by default, configurable per workflow step.
 
 ### Embedding model
 
@@ -526,7 +526,7 @@ Required only for the `input.s3_watcher` module.
 ### Install
 
 ```bash
-pip install 'solus[s3]'
+pip install 'solux[s3]'
 # Installs: boto3
 ```
 
@@ -558,12 +558,12 @@ aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 ## Optional: OIDC auth (web UI)
 
-Required only if you enable `oidc_require_auth = true` in `config.toml` to protect the Solus web UI with an external identity provider (Keycloak, Auth0, Okta, etc.).
+Required only if you enable `oidc_require_auth = true` in `config.toml` to protect the Solux web UI with an external identity provider (Keycloak, Auth0, Okta, etc.).
 
 ### Install
 
 ```bash
-pip install 'solus[oidc]'
+pip install 'solux[oidc]'
 # Installs: PyJWT, cryptography
 ```
 
@@ -572,13 +572,13 @@ pip install 'solus[oidc]'
 ```toml
 [security]
 oidc_issuer       = "https://keycloak.example.com/realms/myrealm"
-oidc_audience     = "solus"
+oidc_audience     = "solux"
 oidc_require_auth = true
 oidc_allowed_algs = ["RS256", "PS256"]   # optional
 ```
 
-Solus fetches the JWKS from `{oidc_issuer}/.well-known/jwks.json` and validates every incoming JWT for signature, expiration, issuer, and audience.
-`oidc_audience` is mandatory when `oidc_require_auth = true`; Solus fails closed if it is missing.
+Solux fetches the JWKS from `{oidc_issuer}/.well-known/jwks.json` and validates every incoming JWT for signature, expiration, issuer, and audience.
+`oidc_audience` is mandatory when `oidc_require_auth = true`; Solux fails closed if it is missing.
 By default, only asymmetric JWT algorithms are accepted (`RS*`, `PS*`, `ES*`).
 
 When `oidc_require_auth = true`, callers must include this header on all routes except `/healthz`:
@@ -589,12 +589,12 @@ Authorization: Bearer <jwt>
 
 ---
 
-## Verifying with `solus doctor`
+## Verifying with `solux doctor`
 
 After installing everything, run:
 
 ```bash
-solus doctor
+solux doctor
 ```
 
 `doctor` checks:
@@ -615,8 +615,8 @@ solus doctor
 A passing run looks like:
 
 ```
-✓ Config file found: ~/.config/solus/config.toml
-✓ Cache directory: ~/.local/share/solus
+✓ Config file found: ~/.config/solux/config.toml
+✓ Cache directory: ~/.local/share/solux
 ✓ yt-dlp: /usr/local/bin/yt-dlp (2024.11.18)
 ✓ ffmpeg: /usr/bin/ffmpeg (6.1.1)
 ✓ whisper-cli: /usr/local/bin/whisper-cli
@@ -746,9 +746,9 @@ pip install --upgrade yt-dlp
 yt-dlp -U
 ```
 
-**Download works in terminal but not in Solus**
+**Download works in terminal but not in Solux**
 
-Solus calls yt-dlp using the binary path from your `PATH` or config. If yt-dlp was installed in a virtual environment or via pyenv, set the path explicitly:
+Solux calls yt-dlp using the binary path from your `PATH` or config. If yt-dlp was installed in a virtual environment or via pyenv, set the path explicitly:
 
 ```toml
 [yt_dlp]
@@ -757,7 +757,7 @@ binary = "/home/user/.local/bin/yt-dlp"
 
 **Age-restricted or login-required videos**
 
-yt-dlp supports cookies for authenticated downloads, but Solus does not pass cookie arguments by default. For such content, pre-download the audio manually and pass the file path to Solus instead of a URL.
+yt-dlp supports cookies for authenticated downloads, but Solux does not pass cookie arguments by default. For such content, pre-download the audio manually and pass the file path to Solux instead of a URL.
 
 ---
 
@@ -789,7 +789,7 @@ print(pytesseract.get_tesseract_version())
 
 ### pyenv / PATH issues
 
-If `solus doctor` reports a tool as missing but you can run it directly in your terminal, the issue is usually pyenv shim resolution. Solus handles this automatically, but as a fallback set explicit paths in `config.toml`:
+If `solux doctor` reports a tool as missing but you can run it directly in your terminal, the issue is usually pyenv shim resolution. Solux handles this automatically, but as a fallback set explicit paths in `config.toml`:
 
 ```toml
 [ffmpeg]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from solus.db import (
+from solux.db import (
     db_claim_next_pending_job,
     db_enqueue_jobs,
     db_queue_counts,

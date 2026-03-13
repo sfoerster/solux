@@ -8,7 +8,7 @@
 # To slow down polling (e.g. every 15 minutes), change interval_seconds to 900.
 #
 # Note: the IMAP_HOST, IMAP_USER, and IMAP_PASSWORD environment variables must
-# be available when `solus worker start` is invoked (source ~/.config/solus/.env).
+# be available when `solux worker start` is invoked (source ~/.config/solux/.env).
 
 name: email_triage_cron
 enabled: false

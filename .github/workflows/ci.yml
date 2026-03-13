@@ -27,7 +27,7 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff format --check src/ tests/
       - run: ruff check src/ tests/
-      - run: mypy src/solus/
+      - run: mypy src/solux/
 
   test:
     runs-on: ubuntu-latest

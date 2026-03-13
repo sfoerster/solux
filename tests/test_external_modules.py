@@ -3,7 +3,7 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-from solus.modules.discovery import discover_external_modules, discover_modules
+from solux.modules.discovery import discover_external_modules, discover_modules
 
 
 def _write_valid_module(directory: Path, name: str = "my_mod", category: str = "input") -> Path:
@@ -11,7 +11,7 @@ def _write_valid_module(directory: Path, name: str = "my_mod", category: str = "
     py_file = directory / f"{name}.py"
     py_file.write_text(
         textwrap.dedent(f"""\
-            from solus.modules.spec import ModuleSpec, ContextKey
+            from solux.modules.spec import ModuleSpec, ContextKey
 
             def handle(ctx, step):
                 return ctx
@@ -83,7 +83,7 @@ def test_external_module_cannot_downgrade_safety(tmp_path: Path) -> None:
     py_file = tmp_path / "webhook.py"
     py_file.write_text(
         textwrap.dedent("""\
-            from solus.modules.spec import ModuleSpec, ContextKey
+            from solux.modules.spec import ModuleSpec, ContextKey
 
             def handle(ctx, step):
                 return ctx
@@ -119,8 +119,8 @@ def test_discover_modules_with_no_external_dir(tmp_path: Path) -> None:
 
 
 def test_execute_workflow_uses_configured_modules_dir(tmp_path: Path) -> None:
-    from solus.config import load_config
-    from solus.pipeline import execute_source_workflow
+    from solux.config import load_config
+    from solux.pipeline import execute_source_workflow
 
     cache_dir = tmp_path / "cache"
     modules_dir = tmp_path / "mods"
@@ -131,7 +131,7 @@ def test_execute_workflow_uses_configured_modules_dir(tmp_path: Path) -> None:
     (modules_dir / "custommod.py").write_text(
         textwrap.dedent(
             """\
-            from solus.modules.spec import ModuleSpec, ContextKey
+            from solux.modules.spec import ModuleSpec, ContextKey
 
             def handle(ctx, step):
                 del step
@@ -194,7 +194,7 @@ def test_execute_workflow_uses_configured_modules_dir(tmp_path: Path) -> None:
 
 
 def test_effective_external_modules_dir_is_none_in_untrusted_mode(tmp_path: Path) -> None:
-    from solus.config import effective_external_modules_dir, load_config
+    from solux.config import effective_external_modules_dir, load_config
 
     modules_dir = tmp_path / "mods"
     modules_dir.mkdir()
@@ -220,9 +220,9 @@ def test_effective_external_modules_dir_is_none_in_untrusted_mode(tmp_path: Path
 
 
 def test_execute_source_workflow_skips_external_modules_in_untrusted_mode(tmp_path: Path, monkeypatch) -> None:
-    from solus.config import load_config
-    from solus.pipeline import execute_source_workflow
-    from solus.workflows.models import Workflow
+    from solux.config import load_config
+    from solux.pipeline import execute_source_workflow
+    from solux.workflows.models import Workflow
 
     modules_dir = tmp_path / "mods"
     modules_dir.mkdir()
@@ -255,10 +255,10 @@ def test_execute_source_workflow_skips_external_modules_in_untrusted_mode(tmp_pa
         called["external_dir"] = external_dir
         return object()
 
-    monkeypatch.setattr("solus.pipeline.build_registry", _fake_build_registry)
-    monkeypatch.setattr("solus.pipeline.load_workflow", lambda *args, **kwargs: Workflow("wf", "", []))
+    monkeypatch.setattr("solux.pipeline.build_registry", _fake_build_registry)
+    monkeypatch.setattr("solux.pipeline.load_workflow", lambda *args, **kwargs: Workflow("wf", "", []))
     monkeypatch.setattr(
-        "solus.pipeline.execute_workflow", lambda workflow, ctx, registry=None, on_step_complete=None: ctx
+        "solux.pipeline.execute_workflow", lambda workflow, ctx, registry=None, on_step_complete=None: ctx
     )
 
     execute_source_workflow(

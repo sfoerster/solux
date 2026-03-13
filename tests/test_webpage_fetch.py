@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.modules.input.webpage_fetch import handle
-from solus.workflows.models import Context, Step
+from solux.modules.input.webpage_fetch import handle
+from solux.workflows.models import Context, Step
 
 SAMPLE_HTML = """\
 <html>
@@ -40,7 +40,7 @@ def _make_step() -> Step:
     return Step(name="fetch_webpage", type="input.webpage_fetch", config={})
 
 
-@patch("solus.modules.input.webpage_fetch.fetch_with_redirect_guard")
+@patch("solux.modules.input.webpage_fetch.fetch_with_redirect_guard")
 def test_handle_sets_webpage_text_and_display_name(mock_fetch, tmp_path: Path) -> None:
     resp = MagicMock()
     resp.text = SAMPLE_HTML
@@ -57,7 +57,7 @@ def test_handle_sets_webpage_text_and_display_name(mock_fetch, tmp_path: Path) -
     assert result.data["display_name"] == "Test Page Title"
 
 
-@patch("solus.modules.input.webpage_fetch.fetch_with_redirect_guard")
+@patch("solux.modules.input.webpage_fetch.fetch_with_redirect_guard")
 def test_handle_uses_url_when_no_title(mock_fetch, tmp_path: Path) -> None:
     resp = MagicMock()
     resp.text = "<html><body><p>No title here</p></body></html>"
@@ -72,7 +72,7 @@ def test_handle_uses_url_when_no_title(mock_fetch, tmp_path: Path) -> None:
     assert "No title here" in result.data["webpage_text"]
 
 
-@patch("solus.modules.input.webpage_fetch.fetch_with_redirect_guard")
+@patch("solux.modules.input.webpage_fetch.fetch_with_redirect_guard")
 def test_handle_writes_metadata(mock_fetch, tmp_path: Path) -> None:
     resp = MagicMock()
     resp.text = SAMPLE_HTML
@@ -87,7 +87,7 @@ def test_handle_writes_metadata(mock_fetch, tmp_path: Path) -> None:
     assert meta_path.exists()
 
 
-@patch("solus.modules.input.webpage_fetch.fetch_with_redirect_guard")
+@patch("solux.modules.input.webpage_fetch.fetch_with_redirect_guard")
 def test_handle_raises_on_http_error(mock_fetch, tmp_path: Path) -> None:
     import requests
 

@@ -9,11 +9,11 @@ from unittest.mock import MagicMock, patch
 
 import yaml
 
-from solus.triggers.loader import load_triggers
-from solus.workflows.expr import _check_safe, evaluate_when
-from solus.workflows.loader import list_workflows, load_workflow
-from solus.workflows.registry import build_registry
-from solus.workflows.validation import validate_workflow
+from solux.triggers.loader import load_triggers
+from solux.workflows.expr import _check_safe, evaluate_when
+from solux.workflows.loader import list_workflows, load_workflow
+from solux.workflows.registry import build_registry
+from solux.workflows.validation import validate_workflow
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES_DIR = ROOT / "docs" / "examples"

@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from solus.workflows.models import Context, Step
+from solux.workflows.models import Context, Step
 
 
 def _ctx(data: dict | None = None, source: str = "test", params: dict | None = None) -> Context:
@@ -65,9 +65,9 @@ ATOM_XML = b"""<?xml version="1.0"?>
 </feed>"""
 
 
-@patch("solus.modules.input.rss_feed.requests.get")
+@patch("solux.modules.input.rss_feed.requests.get")
 def test_rss_feed_rss_format(mock_get) -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     mock_resp = MagicMock()
     mock_resp.content = RSS_XML
@@ -88,9 +88,9 @@ def test_rss_feed_rss_format(mock_get) -> None:
     assert items[0]["summary"] == "First episode"
 
 
-@patch("solus.modules.input.rss_feed.requests.get")
+@patch("solux.modules.input.rss_feed.requests.get")
 def test_rss_feed_atom_format(mock_get) -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     mock_resp = MagicMock()
     mock_resp.content = ATOM_XML
@@ -110,9 +110,9 @@ def test_rss_feed_atom_format(mock_get) -> None:
     assert items[0]["link"] == "http://example.com/one"
 
 
-@patch("solus.modules.input.rss_feed.requests.get")
+@patch("solux.modules.input.rss_feed.requests.get")
 def test_rss_feed_limit(mock_get) -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     mock_resp = MagicMock()
     mock_resp.content = RSS_XML
@@ -129,7 +129,7 @@ def test_rss_feed_limit(mock_get) -> None:
 
 
 def test_rss_feed_missing_url_raises() -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     ctx = _ctx()
     step = _step("input.rss_feed", {})
@@ -145,7 +145,7 @@ def test_rss_feed_missing_url_raises() -> None:
     ],
 )
 def test_rss_feed_rejects_non_http_urls(bad_url: str) -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     ctx = _ctx()
     step = _step("input.rss_feed", {"url": bad_url})
@@ -153,9 +153,9 @@ def test_rss_feed_rejects_non_http_urls(bad_url: str) -> None:
         handle(ctx, step)
 
 
-@patch("solus.modules.input.rss_feed.requests.get")
+@patch("solux.modules.input.rss_feed.requests.get")
 def test_rss_feed_custom_output_key(mock_get) -> None:
-    from solus.modules.input.rss_feed import handle
+    from solux.modules.input.rss_feed import handle
 
     mock_resp = MagicMock()
     mock_resp.content = RSS_XML
@@ -178,7 +178,7 @@ def test_rss_feed_custom_output_key(mock_get) -> None:
 
 
 def test_folder_watch_finds_files(tmp_path: Path) -> None:
-    from solus.modules.input.folder_watch import handle
+    from solux.modules.input.folder_watch import handle
 
     (tmp_path / "ep1.mp3").write_text("audio")
     (tmp_path / "ep2.mp3").write_text("audio")
@@ -194,7 +194,7 @@ def test_folder_watch_finds_files(tmp_path: Path) -> None:
 
 
 def test_folder_watch_missing_path_raises() -> None:
-    from solus.modules.input.folder_watch import handle
+    from solux.modules.input.folder_watch import handle
 
     ctx = _ctx()
     step = _step("input.folder_watch", {})
@@ -203,7 +203,7 @@ def test_folder_watch_missing_path_raises() -> None:
 
 
 def test_folder_watch_nonexistent_dir_returns_empty(tmp_path: Path) -> None:
-    from solus.modules.input.folder_watch import handle
+    from solux.modules.input.folder_watch import handle
 
     ctx = _ctx()
     step = _step("input.folder_watch", {"path": str(tmp_path / "no_such_dir")})
@@ -212,7 +212,7 @@ def test_folder_watch_nonexistent_dir_returns_empty(tmp_path: Path) -> None:
 
 
 def test_folder_watch_custom_output_key(tmp_path: Path) -> None:
-    from solus.modules.input.folder_watch import handle
+    from solux.modules.input.folder_watch import handle
 
     (tmp_path / "file.txt").write_text("x")
     ctx = _ctx()
@@ -229,7 +229,7 @@ def test_folder_watch_custom_output_key(tmp_path: Path) -> None:
 def test_parse_pdf_missing_pypdf_raises(tmp_path: Path) -> None:
     """If pypdf is not installed, RuntimeError with install hint is raised."""
     import sys
-    from solus.modules.input import parse_pdf
+    from solux.modules.input import parse_pdf
 
     pdf_path = tmp_path / "dummy.pdf"
     pdf_path.write_bytes(b"%PDF-1.4 fake")
@@ -256,7 +256,7 @@ def test_parse_pdf_missing_pypdf_raises(tmp_path: Path) -> None:
 
 
 def test_parse_pdf_with_mock_pypdf(tmp_path: Path) -> None:
-    from solus.modules.input import parse_pdf
+    from solux.modules.input import parse_pdf
 
     pdf_path = tmp_path / "test.pdf"
     pdf_path.write_bytes(b"%PDF-1.4 fake")
@@ -292,9 +292,9 @@ def test_parse_pdf_with_mock_pypdf(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@patch("solus.modules.output.webhook.requests.request")
+@patch("solux.modules.output.webhook.requests.request")
 def test_webhook_post_default(mock_request) -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
@@ -313,9 +313,9 @@ def test_webhook_post_default(mock_request) -> None:
     assert result.data["webhook_status_code"] == 200
 
 
-@patch("solus.modules.output.webhook.requests.request")
+@patch("solux.modules.output.webhook.requests.request")
 def test_webhook_logs_redacted_url(mock_request) -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
@@ -330,9 +330,9 @@ def test_webhook_logs_redacted_url(mock_request) -> None:
     ctx.logger.info.assert_any_call("webhook: %s %s", "POST", "https://example.com")
 
 
-@patch("solus.modules.output.webhook.requests.request")
+@patch("solux.modules.output.webhook.requests.request")
 def test_webhook_wrap_key(mock_request) -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     mock_resp = MagicMock()
     mock_resp.status_code = 201
@@ -348,9 +348,9 @@ def test_webhook_wrap_key(mock_request) -> None:
     assert result.data["webhook_status_code"] == 201
 
 
-@patch("solus.modules.output.webhook.requests.request")
+@patch("solux.modules.output.webhook.requests.request")
 def test_webhook_raises_on_4xx(mock_request) -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     mock_resp = MagicMock()
     mock_resp.status_code = 404
@@ -364,9 +364,9 @@ def test_webhook_raises_on_4xx(mock_request) -> None:
         handle(ctx, step)
 
 
-@patch("solus.modules.output.webhook.requests.request")
+@patch("solux.modules.output.webhook.requests.request")
 def test_webhook_no_raise_on_error(mock_request) -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     mock_resp = MagicMock()
     mock_resp.status_code = 500
@@ -381,7 +381,7 @@ def test_webhook_no_raise_on_error(mock_request) -> None:
 
 
 def test_webhook_missing_url_raises() -> None:
-    from solus.modules.output.webhook import handle
+    from solux.modules.output.webhook import handle
 
     ctx = _ctx(data={"output_text": "data"})
     step = _step("output.webhook", {})
@@ -395,7 +395,7 @@ def test_webhook_missing_url_raises() -> None:
 
 
 def test_local_db_inserts_record(tmp_path: Path) -> None:
-    from solus.modules.output.local_db import handle
+    from solux.modules.output.local_db import handle
 
     db_path = tmp_path / "test.db"
     ctx = _ctx(data={"output_text": "hello"})
@@ -407,7 +407,7 @@ def test_local_db_inserts_record(tmp_path: Path) -> None:
 
 
 def test_local_db_inserts_multiple(tmp_path: Path) -> None:
-    from solus.modules.output.local_db import handle
+    from solux.modules.output.local_db import handle
 
     db_path = tmp_path / "test.db"
     for i in range(3):
@@ -418,7 +418,7 @@ def test_local_db_inserts_multiple(tmp_path: Path) -> None:
 
 
 def test_local_db_custom_input_key(tmp_path: Path) -> None:
-    from solus.modules.output.local_db import handle
+    from solux.modules.output.local_db import handle
     import sqlite3
 
     db_path = tmp_path / "test.db"
@@ -433,7 +433,7 @@ def test_local_db_custom_input_key(tmp_path: Path) -> None:
 
 
 def test_local_db_invalid_table_name_raises(tmp_path: Path) -> None:
-    from solus.modules.output.local_db import handle
+    from solux.modules.output.local_db import handle
 
     db_path = tmp_path / "test.db"
     ctx = _ctx(data={"output_text": "hello"})
@@ -447,9 +447,9 @@ def test_local_db_invalid_table_name_raises(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@patch("solus.modules.ai.llm_classify.call_ollama_chat")
+@patch("solux.modules.ai.llm_classify.call_ollama_chat")
 def test_llm_classify_exact_match(mock_chat) -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     mock_chat.return_value = "sports"
     ctx = _ctx(data={"input_text": "The team won the championship."})
@@ -458,9 +458,9 @@ def test_llm_classify_exact_match(mock_chat) -> None:
     assert result.data["classification"] == "sports"
 
 
-@patch("solus.modules.ai.llm_classify.call_ollama_chat")
+@patch("solux.modules.ai.llm_classify.call_ollama_chat")
 def test_llm_classify_case_insensitive(mock_chat) -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     mock_chat.return_value = "TECH"
     ctx = _ctx(data={"input_text": "New AI model released."})
@@ -469,9 +469,9 @@ def test_llm_classify_case_insensitive(mock_chat) -> None:
     assert result.data["classification"] == "tech"
 
 
-@patch("solus.modules.ai.llm_classify.call_ollama_chat")
+@patch("solux.modules.ai.llm_classify.call_ollama_chat")
 def test_llm_classify_fallback_substring(mock_chat) -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     mock_chat.return_value = "I think this is about politics and governance."
     ctx = _ctx(data={"input_text": "Election results announced."})
@@ -480,9 +480,9 @@ def test_llm_classify_fallback_substring(mock_chat) -> None:
     assert result.data["classification"] == "politics"
 
 
-@patch("solus.modules.ai.llm_classify.call_ollama_chat")
+@patch("solux.modules.ai.llm_classify.call_ollama_chat")
 def test_llm_classify_custom_output_key(mock_chat) -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     mock_chat.return_value = "sports"
     ctx = _ctx(data={"input_text": "Football match."})
@@ -493,7 +493,7 @@ def test_llm_classify_custom_output_key(mock_chat) -> None:
 
 
 def test_llm_classify_missing_categories_raises() -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     ctx = _ctx(data={"input_text": "some text"})
     step = _step("ai.llm_classify", {})
@@ -502,7 +502,7 @@ def test_llm_classify_missing_categories_raises() -> None:
 
 
 def test_llm_classify_missing_input_key_raises() -> None:
-    from solus.modules.ai.llm_classify import handle
+    from solux.modules.ai.llm_classify import handle
 
     ctx = _ctx(data={})
     step = _step("ai.llm_classify", {"categories": ["a", "b"]})
@@ -515,9 +515,9 @@ def test_llm_classify_missing_input_key_raises() -> None:
 # ---------------------------------------------------------------------------
 
 
-@patch("solus.modules.ai.llm_extract.call_ollama_chat")
+@patch("solux.modules.ai.llm_extract.call_ollama_chat")
 def test_llm_extract_json_response(mock_chat) -> None:
-    from solus.modules.ai.llm_extract import handle
+    from solux.modules.ai.llm_extract import handle
 
     mock_chat.return_value = '{"name": "Alice", "age": "30"}'
     ctx = _ctx(data={"input_text": "Alice is 30 years old."})
@@ -527,9 +527,9 @@ def test_llm_extract_json_response(mock_chat) -> None:
     assert result.data["extracted"] == {"name": "Alice", "age": "30"}
 
 
-@patch("solus.modules.ai.llm_extract.call_ollama_chat")
+@patch("solux.modules.ai.llm_extract.call_ollama_chat")
 def test_llm_extract_strips_code_fences(mock_chat) -> None:
-    from solus.modules.ai.llm_extract import handle
+    from solux.modules.ai.llm_extract import handle
 
     mock_chat.return_value = '```json\n{"title": "My Book"}\n```'
     ctx = _ctx(data={"input_text": "My Book, published 2024."})
@@ -538,9 +538,9 @@ def test_llm_extract_strips_code_fences(mock_chat) -> None:
     assert result.data["extracted"]["title"] == "My Book"
 
 
-@patch("solus.modules.ai.llm_extract.call_ollama_chat")
+@patch("solux.modules.ai.llm_extract.call_ollama_chat")
 def test_llm_extract_invalid_json_raises(mock_chat) -> None:
-    from solus.modules.ai.llm_extract import handle
+    from solux.modules.ai.llm_extract import handle
 
     mock_chat.return_value = "not json at all"
     ctx = _ctx(data={"input_text": "some text"})
@@ -549,9 +549,9 @@ def test_llm_extract_invalid_json_raises(mock_chat) -> None:
         handle(ctx, step)
 
 
-@patch("solus.modules.ai.llm_extract.call_ollama_chat")
+@patch("solux.modules.ai.llm_extract.call_ollama_chat")
 def test_llm_extract_custom_output_key(mock_chat) -> None:
-    from solus.modules.ai.llm_extract import handle
+    from solux.modules.ai.llm_extract import handle
 
     mock_chat.return_value = '{"x": 1}'
     ctx = _ctx(data={"input_text": "x is 1"})
@@ -562,7 +562,7 @@ def test_llm_extract_custom_output_key(mock_chat) -> None:
 
 
 def test_llm_extract_missing_fields_raises() -> None:
-    from solus.modules.ai.llm_extract import handle
+    from solux.modules.ai.llm_extract import handle
 
     ctx = _ctx(data={"input_text": "some text"})
     step = _step("ai.llm_extract", {})
@@ -575,9 +575,9 @@ def test_llm_extract_missing_fields_raises() -> None:
 # ---------------------------------------------------------------------------
 
 
-@patch("solus.modules.ai.embeddings.requests.post")
+@patch("solux.modules.ai.embeddings.requests.post")
 def test_embeddings_returns_vector(mock_post) -> None:
-    from solus.modules.ai.embeddings import handle
+    from solux.modules.ai.embeddings import handle
 
     mock_resp = MagicMock()
     mock_resp.ok = True
@@ -596,9 +596,9 @@ def test_embeddings_returns_vector(mock_post) -> None:
     assert call_args[1]["json"]["prompt"] == "hello world"
 
 
-@patch("solus.modules.ai.embeddings.requests.post")
+@patch("solux.modules.ai.embeddings.requests.post")
 def test_embeddings_model_override(mock_post) -> None:
-    from solus.modules.ai.embeddings import handle
+    from solux.modules.ai.embeddings import handle
 
     mock_resp = MagicMock()
     mock_resp.json.return_value = {"embedding": [0.5]}
@@ -613,9 +613,9 @@ def test_embeddings_model_override(mock_post) -> None:
     assert call_args[1]["json"]["model"] == "nomic-embed-text"
 
 
-@patch("solus.modules.ai.embeddings.requests.post")
+@patch("solux.modules.ai.embeddings.requests.post")
 def test_embeddings_custom_output_key(mock_post) -> None:
-    from solus.modules.ai.embeddings import handle
+    from solux.modules.ai.embeddings import handle
 
     mock_resp = MagicMock()
     mock_resp.json.return_value = {"embedding": [1.0, 2.0]}
@@ -630,7 +630,7 @@ def test_embeddings_custom_output_key(mock_post) -> None:
 
 
 def test_embeddings_missing_input_raises() -> None:
-    from solus.modules.ai.embeddings import handle
+    from solux.modules.ai.embeddings import handle
 
     ctx = _ctx(data={})
     step = _step("ai.embeddings", {})
@@ -638,9 +638,9 @@ def test_embeddings_missing_input_raises() -> None:
         handle(ctx, step)
 
 
-@patch("solus.modules.ai.embeddings.requests.post")
+@patch("solux.modules.ai.embeddings.requests.post")
 def test_embeddings_bad_response_raises(mock_post) -> None:
-    from solus.modules.ai.embeddings import handle
+    from solux.modules.ai.embeddings import handle
 
     mock_resp = MagicMock()
     mock_resp.json.return_value = {"error": "model not found"}

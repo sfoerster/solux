@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Solus are documented in this file.
+All notable changes to Solux are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
@@ -9,16 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Custom workflow parameters (`params:`) — workflows can declare typed parameters (str, int, bool) in their YAML. When exposed via `solus mcp`, each workflow registers with its own parameter signature instead of the default 4-param (source, mode, format, model) signature. Backward compatible — workflows without `params:` keep the existing signature.
+- Custom workflow parameters (`params:`) — workflows can declare typed parameters (str, int, bool) in their YAML. When exposed via `solux mcp`, each workflow registers with its own parameter signature instead of the default 4-param (source, mode, format, model) signature. Backward compatible — workflows without `params:` keep the existing signature.
 
 ## [0.5.0] — 2026-03-08 (Phase 1: 60-Second Onboarding)
 
 ### Added
-- `solus init` command — guided first-run setup with auto-discovery of Ollama, model verification, workflow scaffolding, and doctor validation
-- `solus examples` shorthand (alias for `solus workflows examples`)
-- `solus run --dry-run` visual execution plan with step names, types, and arrows
-- Inline step progress during `solus run` (step 1/3, 2/3, 3/3 with timing)
-- `solus doctor --fix` mode with copy-pasteable fix commands for each failing check
+- `solux init` command — guided first-run setup with auto-discovery of Ollama, model verification, workflow scaffolding, and doctor validation
+- `solux examples` shorthand (alias for `solux workflows examples`)
+- `solux run --dry-run` visual execution plan with step names, types, and arrows
+- Inline step progress during `solux run` (step 1/3, 2/3, 3/3 with timing)
+- `solux doctor --fix` mode with copy-pasteable fix commands for each failing check
 - Scoped doctor checks — only warn about dependencies for workflows the user actually has
 - Color formatting for doctor output (green checkmarks, red X's, yellow warnings)
 - Actionable error messages on the happy path (e.g., "Ollama not reachable — start it with: `ollama serve`")
@@ -27,7 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Default workflow changed from `audio_summary` to `webpage_summary` — only requires Ollama, no ffmpeg/whisper/yt-dlp
-- `solus <URL>` shorthand now uses `webpage_summary` by default
+- `solux <URL>` shorthand now uses `webpage_summary` by default
 
 ### Fixed
 - Onboarding review findings (idempotent init, sub-10-second completion)
@@ -66,7 +66,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [0.1.0] — 2026-02-22 (Core Engine)
 
 ### Added
-- Initial release of the Solus workflow engine
+- Initial release of the Solux workflow engine
 - 30 built-in modules across 5 categories (input, transform, AI, output, meta)
 - YAML-defined workflows with conditional steps, iteration, sub-workflows, and timeouts
 - 4 trigger types (folder watch, RSS poll, cron, email poll) plus inbound webhooks

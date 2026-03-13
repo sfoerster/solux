@@ -8,12 +8,12 @@ from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 
-from solus import paths
-from solus.background import start_background_worker
-from solus.cleanup import run_cleanup
-from solus.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
-from solus.pipeline import process_source
-from solus.queueing import (
+from solux import paths
+from solux.background import start_background_worker
+from solux.cleanup import run_cleanup
+from solux.config import BinaryConfig, Config, OllamaConfig, PathsConfig, PromptsConfig, WhisperConfig
+from solux.pipeline import process_source
+from solux.queueing import (
     claim_next_pending_job,
     clear_worker_pid,
     current_worker_pid,
@@ -30,8 +30,8 @@ from solus.queueing import (
     write_worker_pid,
     worker_log_path,
 )
-from solus.serve import FileEntry, _render_file_content, discover_sources
-from solus.worker import run_log_worker
+from solux.serve import FileEntry, _render_file_content, discover_sources
+from solux.worker import run_log_worker
 
 
 def _make_config(cache_dir: Path) -> Config:
@@ -112,7 +112,7 @@ def test_worker_marks_job_done_and_logs_queue_length(tmp_path: Path, monkeypatch
             },
         )
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
 
@@ -139,7 +139,7 @@ def test_worker_marks_job_failed(tmp_path: Path, monkeypatch) -> None:
     def fake_execute_source_workflow(*args, **kwargs):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
 
@@ -153,8 +153,8 @@ def test_worker_marks_job_failed(tmp_path: Path, monkeypatch) -> None:
 
 
 def test_worker_uses_configured_trigger_dir_and_reloads_triggers(tmp_path: Path, monkeypatch) -> None:
-    from solus.config import SecurityConfig
-    from solus.triggers.spec import Trigger
+    from solux.config import SecurityConfig
+    from solux.triggers.spec import Trigger
 
     cache_dir = tmp_path / "cache"
     trigger_dir = tmp_path / "custom-triggers.d"
@@ -204,9 +204,9 @@ def test_worker_uses_configured_trigger_dir_and_reloads_triggers(tmp_path: Path,
         def stop(self) -> None:
             return
 
-    monkeypatch.setattr("solus.worker.load_triggers", _fake_load_triggers)
-    monkeypatch.setattr("solus.worker.run_triggers", _fake_run_triggers)
-    monkeypatch.setattr("solus.worker.HotReloader", _FakeHotReloader)
+    monkeypatch.setattr("solux.worker.load_triggers", _fake_load_triggers)
+    monkeypatch.setattr("solux.worker.run_triggers", _fake_run_triggers)
+    monkeypatch.setattr("solux.worker.HotReloader", _FakeHotReloader)
 
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
@@ -326,7 +326,7 @@ def test_process_source_exports_slugged_output_name(tmp_path: Path, monkeypatch)
             },
         )
 
-    monkeypatch.setattr("solus.pipeline.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.pipeline.execute_source_workflow", fake_execute_source_workflow)
 
     result = process_source(
         config,
@@ -508,7 +508,7 @@ def test_retry_failed_jobs_includes_dead_letter(tmp_path: Path) -> None:
 def test_repair_queue_adds_synthetic_done_jobs(tmp_path: Path) -> None:
     cache_dir = tmp_path / "cache"
     # Create a source dir with results + metadata but no queue entry
-    from solus import paths as _paths
+    from solux import paths as _paths
 
     source_dir = _paths.source_dir(cache_dir, "aaa111")
     (source_dir / "summary-full.md").write_text("summary", encoding="utf-8")
@@ -529,7 +529,7 @@ def test_repair_queue_adds_synthetic_done_jobs(tmp_path: Path) -> None:
 
 def test_repair_queue_skips_metadata_only_source(tmp_path: Path) -> None:
     cache_dir = tmp_path / "cache"
-    from solus import paths as _paths
+    from solux import paths as _paths
 
     source_dir = _paths.source_dir(cache_dir, "metaonly")
     (source_dir / "metadata.json").write_text(
@@ -590,8 +590,8 @@ def test_start_background_worker_detects_immediate_start_failure(tmp_path: Path,
         def poll() -> int:
             return 1
 
-    monkeypatch.setattr("solus.background.subprocess.Popen", lambda *args, **kwargs: _DeadProc())
-    monkeypatch.setattr("solus.background.time.sleep", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("solux.background.subprocess.Popen", lambda *args, **kwargs: _DeadProc())
+    monkeypatch.setattr("solux.background.time.sleep", lambda *_args, **_kwargs: None)
 
     started, pid, reason = start_background_worker(cache_dir, poll_interval=1.0, workers=1)
     assert started is False
@@ -662,18 +662,18 @@ def test_reset_processing_jobs_helper(tmp_path: Path) -> None:
 
 
 def test_run_repair_command_fails_if_worker_running(tmp_path: Path, monkeypatch, capsys) -> None:
-    from solus.cli import run_repair_command
+    from solux.cli import run_repair_command
 
     cache_dir = tmp_path / "cache"
     config = _make_config(cache_dir)
 
-    monkeypatch.setattr("solus.cli.maintenance.load_config", lambda: config)
+    monkeypatch.setattr("solux.cli.maintenance.load_config", lambda: config)
 
     @contextmanager
     def _locked(_cache_dir):
         yield False
 
-    monkeypatch.setattr("solus.cli.maintenance.try_worker_lock", _locked)
+    monkeypatch.setattr("solux.cli.maintenance.try_worker_lock", _locked)
 
     rc = run_repair_command()
     captured = capsys.readouterr()
@@ -740,7 +740,7 @@ def test_worker_passes_model_to_execute_source_workflow(tmp_path: Path, monkeypa
             },
         )
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
     assert used_model == ["custom:7b"]
@@ -785,7 +785,7 @@ def test_worker_recovers_stuck_processing_on_startup(tmp_path: Path, monkeypatch
             },
         )
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
     jobs = read_jobs(cache_dir)
@@ -795,7 +795,7 @@ def test_worker_recovers_stuck_processing_on_startup(tmp_path: Path, monkeypatch
 
 
 def test_split_into_chunks_basic() -> None:
-    from solus.summarize import _split_into_chunks
+    from solux.summarize import _split_into_chunks
 
     text = "Hello world. " * 50  # 650 chars
     chunks = _split_into_chunks(text, max_chars=200, overlap=50)
@@ -808,7 +808,7 @@ def test_split_into_chunks_basic() -> None:
 
 
 def test_split_into_chunks_short_text() -> None:
-    from solus.summarize import _split_into_chunks
+    from solux.summarize import _split_into_chunks
 
     text = "Short."
     chunks = _split_into_chunks(text, max_chars=1000)
@@ -817,7 +817,7 @@ def test_split_into_chunks_short_text() -> None:
 
 def test_summarize_transcript_chunked_path(tmp_path: Path, monkeypatch) -> None:
     """When max_transcript_chars is set and text exceeds it, chunked path fires."""
-    from solus.summarize import summarize_transcript
+    from solux.summarize import summarize_transcript
 
     cache_dir = tmp_path / "cache"
     config = _make_config(cache_dir)
@@ -844,7 +844,7 @@ def test_summarize_transcript_chunked_path(tmp_path: Path, monkeypatch) -> None:
         calls.append(prompt["user"][:30])
         return "chunk summary"
 
-    monkeypatch.setattr("solus.summarize.call_ollama_chat", fake_call_ollama)
+    monkeypatch.setattr("solux.summarize.call_ollama_chat", fake_call_ollama)
 
     # ~1100 chars, well over max_transcript_chars=500
     long_transcript = "This is sentence one. " * 50
@@ -860,19 +860,19 @@ def test_summarize_transcript_chunked_path(tmp_path: Path, monkeypatch) -> None:
 
 
 def test_run_ingest_command_starts_background_worker(tmp_path: Path, monkeypatch, capsys) -> None:
-    from solus.cli import parse_args, run_ingest_command
+    from solux.cli import parse_args, run_ingest_command
 
     config = _make_config(tmp_path / "cache")
-    monkeypatch.setattr("solus.cli.queue.load_config", lambda: config)
+    monkeypatch.setattr("solux.cli.queue.load_config", lambda: config)
     monkeypatch.setattr(
-        "solus.cli.queue.enqueue_jobs",
+        "solux.cli.queue.enqueue_jobs",
         lambda *args, **kwargs: [{"job_id": "job123", "workflow_name": "audio_summary", "source": "ep.mp3"}],
     )
     monkeypatch.setattr(
-        "solus.cli.queue.queue_counts",
+        "solux.cli.queue.queue_counts",
         lambda *_args, **_kwargs: {"pending": 1, "processing": 0, "done": 0, "failed": 0, "dead_letter": 0},
     )
-    monkeypatch.setattr("solus.cli.queue.ensure_background_worker", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr("solux.cli.queue.ensure_background_worker", lambda *_args, **_kwargs: True)
 
     args = parse_args(["ingest", "ep.mp3"])
     rc = run_ingest_command(args)
@@ -883,10 +883,10 @@ def test_run_ingest_command_starts_background_worker(tmp_path: Path, monkeypatch
 
 
 def test_run_log_command_uses_log_viewer(tmp_path: Path, monkeypatch) -> None:
-    from solus.cli import parse_args, run_log_command
+    from solux.cli import parse_args, run_log_command
 
     config = _make_config(tmp_path / "cache")
-    monkeypatch.setattr("solus.cli.queue.load_config", lambda: config)
+    monkeypatch.setattr("solux.cli.queue.load_config", lambda: config)
     called: list[float] = []
 
     def fake_viewer(cfg, *, poll_interval, show_existing):
@@ -895,7 +895,7 @@ def test_run_log_command_uses_log_viewer(tmp_path: Path, monkeypatch) -> None:
         assert show_existing is True
         return 0
 
-    monkeypatch.setattr("solus.cli.queue.run_log_viewer", fake_viewer)
+    monkeypatch.setattr("solux.cli.queue.run_log_viewer", fake_viewer)
     args = parse_args(["log", "--poll-interval", "1.5"])
     rc = run_log_command(args)
     assert rc == 0
@@ -945,7 +945,7 @@ def test_worker_persists_context_json(tmp_path: Path, monkeypatch) -> None:
             },
         )
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
 
@@ -1054,7 +1054,7 @@ def test_worker_invokes_on_step_complete_and_persists_step_progress(tmp_path: Pa
                 callback_calls.append({"step": name, "num": i + 1, "total": len(steps)})
         return ctx
 
-    monkeypatch.setattr("solus.worker.execute_source_workflow", fake_execute_source_workflow)
+    monkeypatch.setattr("solux.worker.execute_source_workflow", fake_execute_source_workflow)
     rc = run_log_worker(config, poll_interval=0.01, once=True)
     assert rc == 0
 
@@ -1081,9 +1081,9 @@ def test_worker_invokes_on_step_complete_and_persists_step_progress(tmp_path: Pa
 def test_execute_workflow_on_step_complete_callback() -> None:
     """execute_workflow calls on_step_complete after each step."""
     import logging
-    from solus.workflows.engine import execute_workflow
-    from solus.workflows.models import Context, Step, Workflow
-    from solus.workflows.registry import StepRegistry
+    from solux.workflows.engine import execute_workflow
+    from solux.workflows.models import Context, Step, Workflow
+    from solux.workflows.registry import StepRegistry
 
     def noop_handler(ctx, step):
         ctx.data["touched"] = True
@@ -1123,9 +1123,9 @@ def test_execute_workflow_on_step_complete_callback() -> None:
 def test_execute_workflow_on_step_complete_exception_swallowed() -> None:
     """Exceptions in on_step_complete are silently swallowed."""
     import logging
-    from solus.workflows.engine import execute_workflow
-    from solus.workflows.models import Context, Step, Workflow
-    from solus.workflows.registry import StepRegistry
+    from solux.workflows.engine import execute_workflow
+    from solux.workflows.models import Context, Step, Workflow
+    from solux.workflows.registry import StepRegistry
 
     def noop_handler(ctx, step):
         return ctx

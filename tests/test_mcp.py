@@ -40,7 +40,7 @@ def mock_config(tmp_path: Path):
 @pytest.fixture
 def sample_workflows():
     """Return a list of sample workflow objects for testing."""
-    from solus.workflows.models import Step, Workflow, WorkflowParam
+    from solux.workflows.models import Step, Workflow, WorkflowParam
 
     return [
         Workflow(
@@ -76,38 +76,38 @@ def sample_workflows():
 class TestMCPServerCreation:
     """Test MCP server initialization and tool registration."""
 
-    @patch("solus.mcp.server.load_config")
-    @patch("solus.mcp.server.list_workflows")
+    @patch("solux.mcp.server.load_config")
+    @patch("solux.mcp.server.list_workflows")
     def test_create_mcp_server_registers_tools(self, mock_list_wf, mock_load_cfg, mock_config, sample_workflows):
         mock_load_cfg.return_value = mock_config
         mock_list_wf.return_value = (sample_workflows, [])
 
-        from solus.mcp.server import create_mcp_server
+        from solux.mcp.server import create_mcp_server
 
         server = create_mcp_server()
         assert server is not None
-        # The server should have been created with the name "solus"
-        assert server.name == "solus"
+        # The server should have been created with the name "solux"
+        assert server.name == "solux"
 
-    @patch("solus.mcp.server.load_config")
-    @patch("solus.mcp.server.list_workflows")
+    @patch("solux.mcp.server.load_config")
+    @patch("solux.mcp.server.list_workflows")
     def test_create_mcp_server_handles_invalid_workflows(self, mock_list_wf, mock_load_cfg, mock_config):
         mock_load_cfg.return_value = mock_config
         mock_list_wf.return_value = ([], ["Error loading broken.yaml: invalid YAML"])
 
-        from solus.mcp.server import create_mcp_server
+        from solux.mcp.server import create_mcp_server
 
         # Should not raise despite errors
         server = create_mcp_server()
         assert server is not None
 
-    @patch("solus.mcp.server.load_config")
-    @patch("solus.mcp.server.list_workflows")
+    @patch("solux.mcp.server.load_config")
+    @patch("solux.mcp.server.list_workflows")
     def test_create_mcp_server_empty_workflows(self, mock_list_wf, mock_load_cfg, mock_config):
         mock_load_cfg.return_value = mock_config
         mock_list_wf.return_value = ([], [])
 
-        from solus.mcp.server import create_mcp_server
+        from solux.mcp.server import create_mcp_server
 
         server = create_mcp_server()
         assert server is not None
@@ -118,7 +118,7 @@ class TestHelperFunctions:
     """Test internal helper functions."""
 
     def test_filter_output_removes_internal_keys(self):
-        from solus.mcp.server import _filter_output
+        from solux.mcp.server import _filter_output
 
         data = {
             "output_text": "Hello world",
@@ -137,12 +137,12 @@ class TestHelperFunctions:
         assert "_index" not in result
 
     def test_filter_output_empty_dict(self):
-        from solus.mcp.server import _filter_output
+        from solux.mcp.server import _filter_output
 
         assert _filter_output({}) == {}
 
     def test_make_serializable_handles_basic_types(self):
-        from solus.mcp.server import _make_serializable
+        from solux.mcp.server import _make_serializable
 
         assert _make_serializable("hello") == "hello"
         assert _make_serializable(42) == 42
@@ -151,21 +151,21 @@ class TestHelperFunctions:
         assert _make_serializable(None) is None
 
     def test_make_serializable_handles_nested_structures(self):
-        from solus.mcp.server import _make_serializable
+        from solux.mcp.server import _make_serializable
 
         data = {"key": [1, 2, {"nested": "value"}]}
         result = _make_serializable(data)
         assert result == {"key": [1, 2, {"nested": "value"}]}
 
     def test_make_serializable_converts_non_serializable(self):
-        from solus.mcp.server import _make_serializable
+        from solux.mcp.server import _make_serializable
 
         result = _make_serializable(Path("/some/path"))
         assert isinstance(result, str)
         assert "/some/path" in result
 
     def test_build_context(self, mock_config):
-        from solus.mcp.server import _build_context
+        from solux.mcp.server import _build_context
 
         ctx = _build_context("https://example.com", mock_config, {"mode": "full"})
         assert ctx.source == "https://example.com"
@@ -174,13 +174,13 @@ class TestHelperFunctions:
         assert ctx.params == {"mode": "full"}
 
     def test_build_context_default_params(self, mock_config):
-        from solus.mcp.server import _build_context
+        from solux.mcp.server import _build_context
 
         ctx = _build_context("test.txt", mock_config)
         assert ctx.params == {}
 
     def test_build_context_with_custom_params(self, mock_config):
-        from solus.mcp.server import _build_context
+        from solux.mcp.server import _build_context
 
         ctx = _build_context("https://example.com", mock_config, {"query": "test", "count": 5})
         assert ctx.params["query"] == "test"
@@ -191,19 +191,19 @@ class TestHelperFunctions:
 class TestCustomToolRegistration:
     """Test registration of workflows with custom params."""
 
-    @patch("solus.mcp.server.load_config")
-    @patch("solus.mcp.server.list_workflows")
+    @patch("solux.mcp.server.load_config")
+    @patch("solux.mcp.server.list_workflows")
     def test_server_registers_custom_param_workflow(self, mock_list_wf, mock_load_cfg, mock_config, sample_workflows):
         mock_load_cfg.return_value = mock_config
         mock_list_wf.return_value = (sample_workflows, [])
 
-        from solus.mcp.server import create_mcp_server
+        from solux.mcp.server import create_mcp_server
 
         server = create_mcp_server()
         assert server is not None
 
     def test_run_workflow_common_returns_error_for_missing_workflow(self, mock_config):
-        from solus.mcp.server import _run_workflow_common
+        from solux.mcp.server import _run_workflow_common
 
         result = _run_workflow_common("nonexistent_workflow", mock_config, {})
         assert "error" in json.loads(result)
@@ -214,12 +214,12 @@ class TestMCPCLI:
 
     def test_cmd_mcp_missing_dependency(self, monkeypatch):
         """When mcp is not installed, cmd_mcp should return 1."""
-        import solus.cli.mcp_cmd as mcp_mod
+        import solux.cli.mcp_cmd as mcp_mod
 
         original_import = __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__
 
         def mock_import(name, *args, **kwargs):
-            if name == "solus.mcp.server":
+            if name == "solux.mcp.server":
                 raise ImportError("No module named 'mcp'")
             return original_import(name, *args, **kwargs)
 
@@ -239,7 +239,7 @@ class TestMCPCLI:
 
     def test_mcp_in_parser_commands(self):
         """Verify 'mcp' is a recognized subcommand."""
-        from solus.cli.parser import build_parser
+        from solux.cli.parser import build_parser
 
         parser = build_parser()
         # Should parse without error
@@ -248,7 +248,7 @@ class TestMCPCLI:
 
     def test_mcp_in_cli_commands_set(self):
         """Verify 'mcp' is in the recognized commands set."""
-        from solus.cli import parse_args
+        from solux.cli import parse_args
 
         args = parse_args(["mcp"])
         assert args.command == "mcp"

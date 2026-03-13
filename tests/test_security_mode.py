@@ -5,10 +5,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from solus.modules.spec import ModuleSpec
-from solus.workflows.engine import execute_workflow
-from solus.workflows.models import Context, Step, Workflow
-from solus.workflows.registry import StepRegistry
+from solux.modules.spec import ModuleSpec
+from solux.workflows.engine import execute_workflow
+from solux.workflows.models import Context, Step, Workflow
+from solux.workflows.registry import StepRegistry
 
 
 def _passthrough(ctx: Context, step: Step) -> Context:

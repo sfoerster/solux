@@ -1,6 +1,6 @@
-# Solus Tutorial
+# Solux Tutorial
 
-Solus is a local-first AI workflow engine. It chains together input sources, text transforms, local LLM calls, and output destinations—entirely on your machine with no cloud API dependency. Workflows are composed in YAML, modules are extensible Python, and a background worker with a SQLite queue handles asynchronous processing.
+Solux is a local-first AI workflow engine. It chains together input sources, text transforms, local LLM calls, and output destinations—entirely on your machine with no cloud API dependency. Workflows are composed in YAML, modules are extensible Python, and a background worker with a SQLite queue handles asynchronous processing.
 
 ---
 
@@ -36,17 +36,17 @@ pip install -e .
 Optional extras:
 
 ```bash
-pip install 'solus[pdf]'     # PDF text extraction (pypdf)
-pip install 'solus[ocr]'     # Tesseract OCR (pytesseract)
-pip install 'solus[s3]'      # S3/MinIO support (boto3)
-pip install 'solus[vector]'  # ChromaDB vector store
-pip install 'solus[oidc]'    # OIDC/JWT auth for the web UI
+pip install 'solux[pdf]'     # PDF text extraction (pypdf)
+pip install 'solux[ocr]'     # Tesseract OCR (pytesseract)
+pip install 'solux[s3]'      # S3/MinIO support (boto3)
+pip install 'solux[vector]'  # ChromaDB vector store
+pip install 'solux[oidc]'    # OIDC/JWT auth for the web UI
 pip install -e '.[dev]'      # Development dependencies (pytest, ruff, mypy, pytest-cov)
 ```
 
 ### External dependencies
 
-Solus delegates heavy lifting to external tools that must be installed separately:
+Solux delegates heavy lifting to external tools that must be installed separately:
 
 | Tool | Purpose | Install |
 |------|---------|---------|
@@ -59,11 +59,11 @@ Solus delegates heavy lifting to external tools that must be installed separatel
 ### First-time setup
 
 ```bash
-solus init      # Guided setup: create config, scaffold workflow, check Ollama
-solus doctor    # Verify dependencies (scoped to your workflows by default)
+solux init      # Guided setup: create config, scaffold workflow, check Ollama
+solux doctor    # Verify dependencies (scoped to your workflows by default)
 ```
 
-`solus init` is the recommended first command. It creates `~/.config/solus/config.toml`, scaffolds a starter workflow, checks Ollama, and prints next steps. See also the [Quick Start guide](QUICK_START.md).
+`solux init` is the recommended first command. It creates `~/.config/solux/config.toml`, scaffolds a starter workflow, checks Ollama, and prints next steps. See also the [Quick Start guide](QUICK_START.md).
 
 ---
 
@@ -72,7 +72,7 @@ solus doctor    # Verify dependencies (scoped to your workflows by default)
 ### Summarize a webpage
 
 ```bash
-solus https://example.com/article
+solux https://example.com/article
 ```
 
 The default workflow is `webpage_summary` — it only needs Ollama. No audio stack required.
@@ -80,29 +80,29 @@ The default workflow is `webpage_summary` — it only needs Ollama. No audio sta
 ### Summarize an audio file
 
 ```bash
-solus run --workflow audio_summary episode.mp3
+solux run --workflow audio_summary episode.mp3
 ```
 
-This requires yt-dlp, ffmpeg, and whisper.cpp. Run `solus doctor --workflow audio_summary` to check.
+This requires yt-dlp, ffmpeg, and whisper.cpp. Run `solux doctor --workflow audio_summary` to check.
 
 ### Summarize a YouTube video in bullet-note format
 
 ```bash
-solus run --workflow audio_summary "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mode notes --format markdown
+solux run --workflow audio_summary "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mode notes --format markdown
 ```
 
 ### Queue a batch of files and process them in the background
 
 ```bash
-solus ingest ~/Downloads/podcasts/*.mp3 --workflow audio_summary
-solus worker start
-solus worker status
+solux ingest ~/Downloads/podcasts/*.mp3 --workflow audio_summary
+solux worker start
+solux worker status
 ```
 
 ### Start the web UI
 
 ```bash
-solus serve
+solux serve
 # Open http://localhost:8765
 ```
 
@@ -131,11 +131,11 @@ A **module** is a Python file that exports a `MODULE = ModuleSpec(...)` object a
 
 ### Workflows
 
-A **workflow** is a YAML file that lists an ordered sequence of steps. Each step names a module by its `type` (`category.module_name`) and passes configuration. Workflows live in `~/.config/solus/workflows.d/` or are built into the package.
+A **workflow** is a YAML file that lists an ordered sequence of steps. Each step names a module by its `type` (`category.module_name`) and passes configuration. Workflows live in `~/.config/solux/workflows.d/` or are built into the package.
 
 ### Queue
 
-The **queue** is a SQLite database at `~/.local/share/solus/queue/jobs.db`. Jobs move through statuses: `pending → processing → done` (or `failed → dead_letter` after max retries).
+The **queue** is a SQLite database at `~/.local/share/solux/queue/jobs.db`. Jobs move through statuses: `pending → processing → done` (or `failed → dead_letter` after max retries).
 
 ### Worker
 
@@ -145,11 +145,11 @@ The **worker** is a long-running process that polls the queue, executes workflow
 
 ## Configuration
 
-The config file is at `~/.config/solus/config.toml`. Run `solus config` to create it from defaults.
+The config file is at `~/.config/solux/config.toml`. Run `solux config` to create it from defaults.
 
 ```toml
 [paths]
-cache_dir = "~/.local/share/solus"
+cache_dir = "~/.local/share/solux"
 
 [whisper]
 threads = 4
@@ -168,13 +168,13 @@ binary = "yt-dlp"
 binary = "ffmpeg"
 
 [workflows]
-dir = "~/.config/solus/workflows.d"
+dir = "~/.config/solux/workflows.d"
 
 [modules]
-dir = "~/.config/solus/modules.d"
+dir = "~/.config/solux/modules.d"
 
 [triggers]
-dir = "~/.config/solus/triggers.d"
+dir = "~/.config/solux/triggers.d"
 
 [ui]
 default_workflow = "webpage_summary"
@@ -183,7 +183,7 @@ default_workflow = "webpage_summary"
 mode = "trusted"              # "trusted" or "untrusted"
 # webhook_rate_limit = 60     # Integer >= 1; max POST /api/trigger/* requests per IP per minute
 # oidc_issuer   = "https://idp.example.com/realms/myrealm"
-# oidc_audience = "solus"     # required when oidc_require_auth = true
+# oidc_audience = "solux"     # required when oidc_require_auth = true
 # oidc_require_auth = false
 # oidc_allowed_algs = ["RS256", "PS256"]
 
@@ -196,28 +196,28 @@ mode = "trusted"              # "trusted" or "untrusted"
 
 | Path | Purpose |
 |------|---------|
-| `~/.config/solus/config.toml` | Main configuration |
-| `~/.config/solus/workflows.d/` | User workflow YAML files |
-| `~/.config/solus/modules.d/` | User custom module `.py` files |
-| `~/.config/solus/triggers.d/` | User trigger YAML files |
-| `~/.local/share/solus/` | Runtime data (queue DB, cache, uploads) |
+| `~/.config/solux/config.toml` | Main configuration |
+| `~/.config/solux/workflows.d/` | User workflow YAML files |
+| `~/.config/solux/modules.d/` | User custom module `.py` files |
+| `~/.config/solux/triggers.d/` | User trigger YAML files |
+| `~/.local/share/solux/` | Runtime data (queue DB, cache, uploads) |
 
 ---
 
 ## CLI Reference
 
 ```
-solus [subcommand] [options]
+solux [subcommand] [options]
 ```
 
-If no subcommand is given, `solus <source>` is shorthand for `solus run --workflow <ui.default_workflow> <source>` (`webpage_summary` by default).
+If no subcommand is given, `solux <source>` is shorthand for `solux run --workflow <ui.default_workflow> <source>` (`webpage_summary` by default).
 
-### `solus run`
+### `solux run`
 
 Execute a workflow immediately for a single source.
 
 ```bash
-solus run [--workflow NAME] [OPTIONS] SOURCE
+solux run [--workflow NAME] [OPTIONS] SOURCE
 ```
 
 | Option | Default | Description |
@@ -237,175 +237,175 @@ solus run [--workflow NAME] [OPTIONS] SOURCE
 
 ```bash
 # Summarize a podcast episode
-solus run --workflow audio_summary "https://example.com/episode.mp3"
+solux run --workflow audio_summary "https://example.com/episode.mp3"
 
 # Generate bullet notes from a YouTube video
-solus run --workflow audio_summary "https://youtube.com/watch?v=..." --mode notes --output notes.md
+solux run --workflow audio_summary "https://youtube.com/watch?v=..." --mode notes --output notes.md
 
 # Fetch and summarize a webpage, output JSON
-solus run --workflow webpage_summary "https://news.ycombinator.com" --format json
+solux run --workflow webpage_summary "https://news.ycombinator.com" --format json
 
 # Dry run to validate workflow
-solus run --workflow my_workflow source.txt --dry-run
+solux run --workflow my_workflow source.txt --dry-run
 ```
 
-### `solus ingest`
+### `solux ingest`
 
 Add one or more sources to the background queue without waiting for results.
 
 ```bash
-solus ingest [--workflow NAME] [OPTIONS] SOURCE [SOURCE ...]
+solux ingest [--workflow NAME] [OPTIONS] SOURCE [SOURCE ...]
 ```
 
-Options mirror `solus run` (same flags except `--verbose`, `--dry-run`, `--output`).
+Options mirror `solux run` (same flags except `--verbose`, `--dry-run`, `--output`).
 
 ```bash
 # Queue a directory of podcast files
-solus ingest ~/Downloads/podcasts/*.mp3 --workflow audio_summary --mode tldr
+solux ingest ~/Downloads/podcasts/*.mp3 --workflow audio_summary --mode tldr
 
 # Queue web pages
-solus ingest "https://example.com/a" "https://example.com/b" --workflow webpage_summary
+solux ingest "https://example.com/a" "https://example.com/b" --workflow webpage_summary
 ```
 
-### `solus worker`
+### `solux worker`
 
 Manage the background worker process.
 
 ```bash
-solus worker start [--workers N]   # Start worker (default: 1 thread)
-solus worker status                 # Show queue counts
-solus worker stop                   # Graceful shutdown
+solux worker start [--workers N]   # Start worker (default: 1 thread)
+solux worker status                 # Show queue counts
+solux worker stop                   # Graceful shutdown
 ```
 
 ```bash
 # Run 4 parallel workers
-solus worker start --workers 4
+solux worker start --workers 4
 
 # Check queue
-solus worker status
+solux worker status
 # Pending: 12  Processing: 4  Done: 103  Failed: 2  Dead-letter: 0
 ```
 
-### `solus log`
+### `solux log`
 
 View worker logs.
 
 ```bash
-solus log           # Print all logs
-solus log --no-history  # Skip startup history and show live updates only
+solux log           # Print all logs
+solux log --no-history  # Skip startup history and show live updates only
 ```
 
-### `solus workflows`
+### `solux workflows`
 
 Manage workflows. All of these are also available in the web UI at `/workflows`.
 
 ```bash
-solus workflows list           # List all available workflows (built-in + user)
-solus workflows show NAME      # Print workflow YAML
-solus workflows validate NAME  # Validate workflow without running it
-solus workflows examples       # Print example/template YAML for new workflows
-solus workflows delete NAME    # Delete a workflow YAML file (--yes to skip prompt)
+solux workflows list           # List all available workflows (built-in + user)
+solux workflows show NAME      # Print workflow YAML
+solux workflows validate NAME  # Validate workflow without running it
+solux workflows examples       # Print example/template YAML for new workflows
+solux workflows delete NAME    # Delete a workflow YAML file (--yes to skip prompt)
 ```
 
-### `solus triggers`
+### `solux triggers`
 
 Manage triggers. All of these are also available in the web UI at `/triggers`.
 
 ```bash
-solus triggers list            # List all triggers in triggers.d/
-solus triggers show NAME       # Print a trigger's YAML
-solus triggers validate NAME   # Validate a trigger YAML (also checks workflow exists)
-solus triggers examples        # Print example/template YAML for new triggers
-solus triggers delete NAME     # Delete a trigger YAML file (--yes to skip prompt)
+solux triggers list            # List all triggers in triggers.d/
+solux triggers show NAME       # Print a trigger's YAML
+solux triggers validate NAME   # Validate a trigger YAML (also checks workflow exists)
+solux triggers examples        # Print example/template YAML for new triggers
+solux triggers delete NAME     # Delete a trigger YAML file (--yes to skip prompt)
 ```
 
-> After creating, editing, or deleting a trigger file, restart the worker for the change to take effect: `solus worker stop && solus worker start`.
+> After creating, editing, or deleting a trigger file, restart the worker for the change to take effect: `solux worker stop && solux worker start`.
 
-### `solus modules`
+### `solux modules`
 
 Inspect available modules.
 
 ```bash
-solus modules list          # List all modules with category and version
-solus modules inspect NAME  # Show full module spec (reads, writes, config, deps)
+solux modules list          # List all modules with category and version
+solux modules inspect NAME  # Show full module spec (reads, writes, config, deps)
 ```
 
 ```bash
-solus modules inspect ai.llm_summarize
+solux modules inspect ai.llm_summarize
 ```
 
-### `solus serve`
+### `solux serve`
 
 Start the web UI.
 
 ```bash
-solus serve [--host HOST] [--port PORT]
+solux serve [--host HOST] [--port PORT]
 ```
 
 Defaults to `http://localhost:8765`.
 
-### `solus init`
+### `solux init`
 
 Guided first-run setup. Creates config, scaffolds a starter workflow, checks Ollama, and prints next steps.
 
 ```bash
-solus init
+solux init
 ```
 
 This is idempotent — running it again won't overwrite existing files.
 
-### `solus config`
+### `solux config`
 
 View and edit the configuration file.
 
 ```bash
-solus config         # Create config.toml if missing, print it, run doctor
-solus config edit    # Open config.toml in $EDITOR (VISUAL / EDITOR / nano / vi)
+solux config         # Create config.toml if missing, print it, run doctor
+solux config edit    # Open config.toml in $EDITOR (VISUAL / EDITOR / nano / vi)
 ```
 
-You can also edit the config in the web UI at `/config`. Config changes require restarting `solus serve` to take effect.
+You can also edit the config in the web UI at `/config`. Config changes require restarting `solux serve` to take effect.
 
-### `solus doctor`
+### `solux doctor`
 
 Verify the environment. By default, only checks dependencies required by your configured workflows.
 
 ```bash
-solus doctor                              # scoped to your workflows
-solus doctor --all                        # check all dependencies
-solus doctor --fix                        # show copy-pasteable fix commands
-solus doctor --workflow audio_summary     # check one workflow's deps
+solux doctor                              # scoped to your workflows
+solux doctor --all                        # check all dependencies
+solux doctor --fix                        # show copy-pasteable fix commands
+solux doctor --workflow audio_summary     # check one workflow's deps
 ```
 
-### `solus examples`
+### `solux examples`
 
-Print example workflow YAML templates. Shorthand for `solus workflows examples`.
+Print example workflow YAML templates. Shorthand for `solux workflows examples`.
 
 ```bash
-solus examples
+solux examples
 ```
 
-### `solus cleanup`
+### `solux cleanup`
 
 Remove cached artifacts.
 
 ```bash
-solus cleanup [--dry-run] [--yes] [--source-id ID] [--older-than-days N]
+solux cleanup [--dry-run] [--yes] [--source-id ID] [--older-than-days N]
 ```
 
-### `solus retry`
+### `solux retry`
 
 Re-queue failed or dead-letter jobs.
 
 ```bash
-solus retry
+solux retry
 ```
 
-### `solus repair`
+### `solux repair`
 
 Recover stuck or orphaned jobs by reconstructing queue state from the filesystem.
 
 ```bash
-solus repair
+solux repair
 ```
 
 ---
@@ -428,10 +428,10 @@ steps:
       format: markdown
 ```
 
-Save as `~/.config/solus/workflows.d/my_workflow.yaml`, then run:
+Save as `~/.config/solux/workflows.d/my_workflow.yaml`, then run:
 
 ```bash
-solus run --workflow my_workflow "https://example.com"
+solux run --workflow my_workflow "https://example.com"
 ```
 
 ### Step anatomy
@@ -471,7 +471,7 @@ Use `when:` to skip a step unless a condition is met. The expression is evaluate
 
 ### Iterating over lists (`foreach:`)
 
-Use `foreach:` to run a step once per item in a context list. Solus injects `_item` (current element) and `_index` (zero-based position) into the context for each iteration.
+Use `foreach:` to run a step once per item in a context list. Solux injects `_item` (current element) and `_index` (zero-based position) into the context for each iteration.
 
 ```yaml
 - name: summarize_each_message
@@ -496,7 +496,7 @@ steps:
 
 ### Error handling (`on_error:`)
 
-Any step can specify an `on_error` workflow to run if the step fails. When a step raises an exception and `on_error` is set, Solus injects `_error` (the error message) and `_error_step` (the failing step name) into the context, then executes the named workflow.
+Any step can specify an `on_error` workflow to run if the step fails. When a step raises an exception and `on_error` is set, Solux injects `_error` (the error message) and `_error_step` (the failing step name) into the context, then executes the named workflow.
 
 ```yaml
 steps:
@@ -608,7 +608,7 @@ Download audio from a URL (YouTube, podcast, direct link) or accept a local file
 
 #### `input.webpage_fetch`
 
-Fetch a URL and extract its text content using Solus's built-in HTML-to-text extractor.
+Fetch a URL and extract its text content using Solux's built-in HTML-to-text extractor.
 
 **Reads:** `ctx["source"]` (URL)
 **Writes:** `webpage_text`, `display_name`
@@ -667,7 +667,7 @@ Snapshot a directory and return file paths matching a glob pattern, sorted by mo
 
 #### `input.parse_pdf`
 
-Extract text from a PDF file using `pypdf`. Requires `pip install 'solus[pdf]'`.
+Extract text from a PDF file using `pypdf`. Requires `pip install 'solux[pdf]'`.
 
 | Config key | Default | Description |
 |------------|---------|-------------|
@@ -738,7 +738,7 @@ Extract video URLs from a YouTube playlist using `yt-dlp`.
 
 #### `input.s3_watcher`
 
-List objects from an S3-compatible bucket. **Trusted-only**. Requires `pip install 'solus[s3]'`.
+List objects from an S3-compatible bucket. **Trusted-only**. Requires `pip install 'solux[s3]'`.
 
 | Config key | Default | Description |
 |------------|---------|-------------|
@@ -855,7 +855,7 @@ Extract file metadata: filesystem attributes plus format-specific fields (e.g., 
 
 #### `transform.ocr`
 
-Extract text from an image using Tesseract. Requires `pip install 'solus[ocr]'` and the system `tesseract-ocr` package.
+Extract text from an image using Tesseract. Requires `pip install 'solux[ocr]'` and the system `tesseract-ocr` package.
 
 | Config key | Default | Description |
 |------------|---------|-------------|
@@ -1114,12 +1114,12 @@ Append a record to a local SQLite table. **Trusted-only.**
 
 #### `output.vector_store`
 
-Upsert text + embedding into a ChromaDB collection. **Trusted-only.** Requires `pip install 'solus[vector]'`.
+Upsert text + embedding into a ChromaDB collection. **Trusted-only.** Requires `pip install 'solux[vector]'`.
 
 | Config key | Default | Description |
 |------------|---------|-------------|
-| `collection` | `solus` | ChromaDB collection name |
-| `db_path` | `~/.local/share/solus/chroma` | Path to ChromaDB directory |
+| `collection` | `solux` | ChromaDB collection name |
+| `db_path` | `~/.local/share/solux/chroma` | Path to ChromaDB directory |
 | `embedding_key` | `embedding` | Context key for embedding float list |
 | `text_key` | `output_text` | Context key for text content |
 | `id_key` | `""` | Context key for document ID (empty = use `ctx.source_id`) |
@@ -1149,7 +1149,7 @@ Send an email via SMTP. **Trusted-only.**
 | `smtp_password` | *(required)* | Login password |
 | `from_addr` | *(required)* | Sender address |
 | `to_addr` | *(required)* | Recipient address |
-| `subject_template` | `"Solus: {display_name}"` | Email subject (supports `{variable}`) |
+| `subject_template` | `"Solux: {display_name}"` | Email subject (supports `{variable}`) |
 | `input_key` | `output_text` | Context key for email body |
 | `use_tls` | `true` | Use STARTTLS |
 
@@ -1177,7 +1177,7 @@ Write a note to an Obsidian vault with YAML frontmatter. **Trusted-only.**
 | Config key | Default | Description |
 |------------|---------|-------------|
 | `vault_path` | *(required)* | Path to Obsidian vault root |
-| `folder` | `"Solus"` | Subfolder within vault |
+| `folder` | `"Solux"` | Subfolder within vault |
 | `input_key` | `output_text` | Context key for note body |
 | `filename_key` | `display_name` | Context key for note filename |
 | `tags` | `[]` | YAML frontmatter tags |
@@ -1206,7 +1206,7 @@ Logs redact the webhook URL to `scheme://host` to avoid leaking path/query secre
 | `webhook_url` | *(required)* | Slack incoming webhook URL |
 | `input_key` | `output_text` | Context key for message content |
 | `message_template` | `None` | Template with `{variable}` placeholders; overrides `input_key` |
-| `username` | `"Solus"` | Bot display name |
+| `username` | `"Solux"` | Bot display name |
 | `icon_emoji` | `":robot_face:"` | Bot emoji icon |
 
 **Writes:** `slack_status_code`
@@ -1223,11 +1223,11 @@ Logs redact the webhook URL to `scheme://host` to avoid leaking path/query secre
 
 #### `output.vinsium_node`
 
-Forward workflow data to a remote Solus instance. **Trusted-only.**
+Forward workflow data to a remote Solux instance. **Trusted-only.**
 
 | Config key | Default | Description |
 |------------|---------|-------------|
-| `node_url` | *(required)* | Remote Solus base URL |
+| `node_url` | *(required)* | Remote Solux base URL |
 | `auth_token` | `None` | Bearer token for remote auth |
 | `workflow_name` | *(required)* | Workflow to trigger on remote node |
 | `input_key` | `output_text` | Context key for payload |
@@ -1239,7 +1239,7 @@ Forward workflow data to a remote Solus instance. **Trusted-only.**
 - name: forward
   type: output.vinsium_node
   config:
-    node_url: "https://solus.internal"
+    node_url: "https://solux.internal"
     auth_token: "${env:REMOTE_TOKEN}"
     workflow_name: archive_summary
     input_key: summary_text
@@ -1290,10 +1290,10 @@ The worker is a long-running process that polls the SQLite queue and executes jo
 
 ```bash
 # Single worker (default)
-solus worker start
+solux worker start
 
 # Four parallel workers
-solus worker start --workers 4
+solux worker start --workers 4
 ```
 
 The worker process continues until stopped and hot-reloads modules, workflows, and triggers every 5 seconds—so you can edit them without restarting.
@@ -1301,7 +1301,7 @@ The worker process continues until stopped and hot-reloads modules, workflows, a
 ### Checking queue status
 
 ```bash
-solus worker status
+solux worker status
 ```
 
 Output:
@@ -1317,12 +1317,12 @@ Dead-letter:   0
 ### Stopping the worker
 
 ```bash
-solus worker stop
+solux worker stop
 ```
 
 ### Retry behavior
 
-When a step fails, Solus schedules an automatic retry with **exponential backoff**:
+When a step fails, Solux schedules an automatic retry with **exponential backoff**:
 
 | Attempt | Delay before retry |
 |---------|--------------------|
@@ -1335,20 +1335,20 @@ Timeout failures are an exception: they skip backoff and go directly to `dead_le
 
 Max retries default to 3 and can be overridden per job at ingest time.
 
-Failed jobs that have exhausted their retries remain in the queue as `dead_letter` for inspection. Use `solus retry` to manually re-queue them.
+Failed jobs that have exhausted their retries remain in the queue as `dead_letter` for inspection. Use `solux retry` to manually re-queue them.
 
 ### Viewing logs
 
 ```bash
-solus log          # Print all worker log entries
-solus log --no-history   # Skip startup history and show live updates only
+solux log          # Print all worker log entries
+solux log --no-history   # Skip startup history and show live updates only
 ```
 
 ---
 
 ## Triggers
 
-Triggers allow Solus to automatically enqueue jobs based on external events without manual intervention. Trigger definitions live in `~/.config/solus/triggers.d/*.yaml`.
+Triggers allow Solux to automatically enqueue jobs based on external events without manual intervention. Trigger definitions live in `~/.config/solux/triggers.d/*.yaml`.
 
 The worker must be running for triggers to fire.
 The built-in `daily_briefing_cron` and `email_inbox_monitor` templates default to the source-agnostic `trigger_event_note` workflow so they execute safely before you wire in a production pipeline.
@@ -1467,10 +1467,10 @@ curl -X POST http://localhost:8765/api/trigger/webpage_summary \
   -d '{"source": "https://example.com/new-article", "mode": "tldr"}'
 ```
 
-The web server (`solus serve`) must be running for inbound webhooks.
-`source` must be a scalar (`string`, `number`, `boolean`, or `null`). Objects/arrays are rejected with HTTP 400. If omitted or `null`, Solus uses `webhook://{workflow_name}`.
+The web server (`solux serve`) must be running for inbound webhooks.
+`source` must be a scalar (`string`, `number`, `boolean`, or `null`). Objects/arrays are rejected with HTTP 400. If omitted or `null`, Solux uses `webhook://{workflow_name}`.
 
-Trigger dedupe state is stored per cache directory at `<cache_dir>/triggers/trigger_state.db` (default: `~/.local/share/solus/triggers/trigger_state.db`).
+Trigger dedupe state is stored per cache directory at `<cache_dir>/triggers/trigger_state.db` (default: `~/.local/share/solux/triggers/trigger_state.db`).
 
 ---
 
@@ -1479,35 +1479,35 @@ Trigger dedupe state is stored per cache directory at `<cache_dir>/triggers/trig
 Start the web server:
 
 ```bash
-solus serve                    # http://localhost:8765
-solus serve --host 0.0.0.0    # Listen on all interfaces
-solus serve --port 9000        # Custom port
+solux serve                    # http://localhost:8765
+solux serve --host 0.0.0.0    # Listen on all interfaces
+solux serve --port 9000        # Custom port
 ```
 
-If you bind to a non-local interface without OIDC auth enabled, Solus prints a startup warning.
-For browser-originated POST routes, Solus enforces same-origin checks (`Sec-Fetch-Site`, `Origin`, `Referer`) to reduce CSRF risk. `/api/trigger/{workflow}` is intentionally exempt so external systems (including hosts on a VPN) can submit webhook jobs.
+If you bind to a non-local interface without OIDC auth enabled, Solux prints a startup warning.
+For browser-originated POST routes, Solux enforces same-origin checks (`Sec-Fetch-Site`, `Origin`, `Referer`) to reduce CSRF risk. `/api/trigger/{workflow}` is intentionally exempt so external systems (including hosts on a VPN) can submit webhook jobs.
 
-Solus is **terminal-first**: every operation available in the web UI is also available as a CLI command. The UI is a convenience layer.
+Solux is **terminal-first**: every operation available in the web UI is also available as a CLI command. The UI is a convenience layer.
 
 ### Pages
 
 | URL | Terminal equivalent | Description |
 |-----|--------------------|----|
-| `/` | `solus log` | Dashboard: job queue, source browser, output viewer |
-| `/workflows` | `solus workflows list` | List all workflows; link to editor |
-| `/workflow/{name}` | `solus workflows show/validate NAME` | YAML editor with validation and delete |
-| `/workflow/new?template=NAME` | `solus workflows examples` | Create workflow from a template |
-| `/triggers` | `solus triggers list` | List all triggers; link to editor |
-| `/trigger/{name}` | `solus triggers show/validate NAME` | YAML editor for triggers with delete |
-| `/trigger/new?template=NAME` | `solus triggers examples` | Create trigger from a template |
-| `/config` | `solus config` / `solus config edit` | View and edit `config.toml` |
-| `/examples` | `solus workflows examples` / `solus triggers examples` | Browse all example templates |
-| `/modules` | `solus modules list` | Module catalog |
-| `/history` | `solus log` | Job run history (paginated, 100/page); toolbar to retry all failed or clear dead-letter jobs |
+| `/` | `solux log` | Dashboard: job queue, source browser, output viewer |
+| `/workflows` | `solux workflows list` | List all workflows; link to editor |
+| `/workflow/{name}` | `solux workflows show/validate NAME` | YAML editor with validation and delete |
+| `/workflow/new?template=NAME` | `solux workflows examples` | Create workflow from a template |
+| `/triggers` | `solux triggers list` | List all triggers; link to editor |
+| `/trigger/{name}` | `solux triggers show/validate NAME` | YAML editor for triggers with delete |
+| `/trigger/new?template=NAME` | `solux triggers examples` | Create trigger from a template |
+| `/config` | `solux config` / `solux config edit` | View and edit `config.toml` |
+| `/examples` | `solux workflows examples` / `solux triggers examples` | Browse all example templates |
+| `/modules` | `solux modules list` | Module catalog |
+| `/history` | `solux log` | Job run history (paginated, 100/page); toolbar to retry all failed or clear dead-letter jobs |
 | `/healthz` | — | Health check (unauthenticated); returns `{"status":"ok","queue":{...}}` |
 
-> **Config changes** (`/config`) take effect after restarting `solus serve`.
-> **Trigger changes** (`/triggers`) take effect after restarting the worker (`solus worker stop && solus worker start`).
+> **Config changes** (`/config`) take effect after restarting `solux serve`.
+> **Trigger changes** (`/triggers`) take effect after restarting the worker (`solux worker stop && solux worker start`).
 
 ### Live updates
 
@@ -1533,7 +1533,7 @@ POST requests are subject to per-route size limits:
 
 ### Security modes
 
-Solus has two security modes configured in `config.toml`:
+Solux has two security modes configured in `config.toml`:
 
 ```toml
 [security]
@@ -1563,10 +1563,10 @@ To authenticate inbound webhook requests (`POST /api/trigger/{workflow}`), set a
 webhook_secret = "my-shared-secret"
 ```
 
-Callers must include an `X-Solus-Signature` header with the HMAC hex digest:
+Callers must include an `X-Solux-Signature` header with the HMAC hex digest:
 
 ```
-X-Solus-Signature: sha256=<hex-digest>
+X-Solux-Signature: sha256=<hex-digest>
 ```
 
 Example with `curl`:
@@ -1577,7 +1577,7 @@ BODY='{"source": "https://example.com/article"}'
 SIG=$(echo -n "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/.*= //')
 curl -X POST http://localhost:8765/api/trigger/webpage_summary \
   -H "Content-Type: application/json" \
-  -H "X-Solus-Signature: sha256=$SIG" \
+  -H "X-Solux-Signature: sha256=$SIG" \
   -d "$BODY"
 ```
 
@@ -1589,7 +1589,7 @@ When `webhook_secret` is empty or unset, webhooks are accepted without signature
 
 ### Webhook rate limiting
 
-Solus enforces a per-IP sliding-window rate limit on `POST /api/trigger/*` to prevent abuse. The default is 60 requests per minute per source IP; requests that exceed it receive HTTP 429.
+Solux enforces a per-IP sliding-window rate limit on `POST /api/trigger/*` to prevent abuse. The default is 60 requests per minute per source IP; requests that exceed it receive HTTP 429.
 `webhook_rate_limit` must be an integer `>= 1`; invalid values fail config load.
 
 Configure the limit in `config.toml`:
@@ -1599,7 +1599,7 @@ Configure the limit in `config.toml`:
 webhook_rate_limit = 120   # Raise to 120 if you have high-volume integrations
 ```
 
-For memory safety, Solus keeps this rate-limit state bounded by evicting stale and oldest entries.
+For memory safety, Solux keeps this rate-limit state bounded by evicting stale and oldest entries.
 
 ### OIDC authentication for the web UI
 
@@ -1610,7 +1610,7 @@ Enable it in `config.toml`:
 ```toml
 [security]
 oidc_issuer    = "https://idp.example.com/realms/myrealm"
-oidc_audience  = "solus"
+oidc_audience  = "solux"
 oidc_require_auth = true
 oidc_allowed_algs = ["RS256", "PS256"]   # optional
 ```
@@ -1618,23 +1618,23 @@ oidc_allowed_algs = ["RS256", "PS256"]   # optional
 Install the OIDC extra:
 
 ```bash
-pip install 'solus[oidc]'
+pip install 'solux[oidc]'
 ```
 
-Callers must include `Authorization: Bearer <jwt>` on all routes except `/healthz`. This includes `/events` and `POST /api/trigger/{workflow}` when auth is required. Solus fetches the JWKS from `{issuer}/.well-known/jwks.json` and validates the token signature, expiration, audience, and issuer.
-`oidc_audience` must be set when `oidc_require_auth = true`; Solus fails closed if it is missing.
+Callers must include `Authorization: Bearer <jwt>` on all routes except `/healthz`. This includes `/events` and `POST /api/trigger/{workflow}` when auth is required. Solux fetches the JWKS from `{issuer}/.well-known/jwks.json` and validates the token signature, expiration, audience, and issuer.
+`oidc_audience` must be set when `oidc_require_auth = true`; Solux fails closed if it is missing.
 By default, only asymmetric JWT algorithms are accepted (`RS*`, `PS*`, `ES*`).
 
 ---
 
 ## Writing Custom Modules
 
-Drop a `.py` file into `~/.config/solus/modules.d/` to add a new module. The worker hot-reloads it within 5 seconds.
+Drop a `.py` file into `~/.config/solux/modules.d/` to add a new module. The worker hot-reloads it within 5 seconds.
 
 ### Module skeleton
 
 ```python
-from solus.modules.spec import ConfigField, ContextKey, ModuleSpec
+from solux.modules.spec import ConfigField, ContextKey, ModuleSpec
 
 def handle(ctx, step):
     config = step.config
@@ -1687,7 +1687,7 @@ steps:
 - Raise a plain `Exception` to trigger retry logic; use specific messages for clarity.
 - Read from context using `.get()` with safe defaults; never assume a key exists.
 - Set `safety="trusted_only"` if your module accesses credentials, the network, the filesystem, or other sensitive resources.
-- List all non-stdlib `dependencies` so `solus doctor` can advise users.
+- List all non-stdlib `dependencies` so `solux doctor` can advise users.
 
 ---
 
@@ -1700,15 +1700,15 @@ config:
   password: "${env:MY_PASSWORD}"
 ```
 
-Solus expands `${env:VAR_NAME}` at workflow load time. If a variable is missing, it expands to an empty string by default. Set `security.strict_env_vars = true` to fail fast on missing variables.
+Solux expands `${env:VAR_NAME}` at workflow load time. If a variable is missing, it expands to an empty string by default. Set `security.strict_env_vars = true` to fail fast on missing variables.
 
 **Recommended approach:**
 
 1. Store secrets in a `.env` file (never commit this file).
-2. Source it before running Solus:
+2. Source it before running Solux:
 
 ```bash
-source ~/.config/solus/.env && solus worker start
+source ~/.config/solux/.env && solux worker start
 ```
 
 Or use a secrets manager (Vault, 1Password CLI, etc.) to inject environment variables into the process.
@@ -1833,7 +1833,7 @@ steps:
 Break large workflows into reusable pieces:
 
 ```yaml
-# ~/.config/solus/workflows.d/fetch_and_clean.yaml
+# ~/.config/solux/workflows.d/fetch_and_clean.yaml
 name: fetch_and_clean
 steps:
   - name: fetch
@@ -1848,7 +1848,7 @@ steps:
 ```
 
 ```yaml
-# ~/.config/solus/workflows.d/full_pipeline.yaml
+# ~/.config/solux/workflows.d/full_pipeline.yaml
 name: full_pipeline
 steps:
   - name: prepare
@@ -1868,7 +1868,7 @@ steps:
 Route documents to different processing pipelines based on classification:
 
 ```yaml
-# ~/.config/solus/workflows.d/smart_router.yaml
+# ~/.config/solux/workflows.d/smart_router.yaml
 name: smart_router
 description: "Classify a document and route to the appropriate pipeline."
 steps:
@@ -1946,10 +1946,10 @@ Before running a new workflow in production, validate it:
 
 ```bash
 # Parse and validate workflow YAML (does not execute)
-solus run --workflow my_workflow source.txt --dry-run
+solux run --workflow my_workflow source.txt --dry-run
 
 # Validate workflow definition
-solus workflows validate my_workflow
+solux workflows validate my_workflow
 ```
 
 ---
@@ -1968,11 +1968,11 @@ docker compose up -d
 
 This brings up three services: `ollama` (LLM server), `server` (web UI on port 8765), and `worker` (background processor). Config and data are persisted via Docker volumes.
 
-Place your `config.toml` and workflow files in the `solus_config` volume, or bind-mount a local directory:
+Place your `config.toml` and workflow files in the `solux_config` volume, or bind-mount a local directory:
 
 ```bash
 mkdir -p ./my-config ./my-data
-SOLUS_CONFIG_MOUNT=./my-config SOLUS_DATA_MOUNT=./my-data docker compose up -d
+SOLUX_CONFIG_MOUNT=./my-config SOLUX_DATA_MOUNT=./my-data docker compose up -d
 ```
 
 By default, compose publishes ports on `127.0.0.1` only to avoid accidental LAN exposure. The image includes `ffmpeg` and `yt-dlp` but not `whisper-cli`. For audio transcription, mount the whisper binary and model into the container or build a custom image.
@@ -1997,18 +1997,18 @@ healthcheck:
   retries: 3
 ```
 
-Or in a load balancer upstream check. `/healthz` always returns `status: ok` if Solus is reachable—it does not check Ollama or whisper availability.
+Or in a load balancer upstream check. `/healthz` always returns `status: ok` if Solux is reachable—it does not check Ollama or whisper availability.
 
 ### systemd
 
 Hardened unit files are at `contrib/systemd/`:
 
 ```bash
-sudo cp contrib/systemd/solus-server.service /etc/systemd/system/
-sudo cp contrib/systemd/solus-worker.service /etc/systemd/system/
-sudo useradd --system --create-home solus
+sudo cp contrib/systemd/solux-server.service /etc/systemd/system/
+sudo cp contrib/systemd/solux-worker.service /etc/systemd/system/
+sudo useradd --system --create-home solux
 sudo systemctl daemon-reload
-sudo systemctl enable --now solus-server solus-worker
+sudo systemctl enable --now solux-server solux-worker
 ```
 
 Security hardening includes `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`, and `PrivateTmp`. Edit `ReadWritePaths` if your paths differ from defaults.
@@ -2016,8 +2016,8 @@ Security hardening includes `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectH
 Check status:
 
 ```bash
-sudo systemctl status solus-server solus-worker
-journalctl -u solus-worker -f
+sudo systemctl status solux-server solux-worker
+journalctl -u solux-worker -f
 
 # Confirm the server is healthy
 curl -s http://localhost:8765/healthz
@@ -2027,9 +2027,9 @@ curl -s http://localhost:8765/healthz
 
 ## Troubleshooting
 
-### `solus doctor` failures
+### `solux doctor` failures
 
-Run `solus doctor --fix` to identify missing dependencies with copy-pasteable commands. Common fixes:
+Run `solux doctor --fix` to identify missing dependencies with copy-pasteable commands. Common fixes:
 
 | Problem | Fix |
 |---------|-----|
@@ -2037,14 +2037,14 @@ Run `solus doctor --fix` to identify missing dependencies with copy-pasteable co
 | `ffmpeg` not found | `apt install ffmpeg` or `brew install ffmpeg` |
 | `yt-dlp` not found | `pip install yt-dlp` |
 | Ollama not reachable | Start Ollama with `ollama serve` and pull a model (`ollama pull qwen3:8b`) |
-| `tesseract` not found | `apt install tesseract-ocr` and `pip install 'solus[ocr]'` |
+| `tesseract` not found | `apt install tesseract-ocr` and `pip install 'solux[ocr]'` |
 
 ### Jobs stuck in `processing`
 
 If the worker crashed while processing, jobs remain in `processing` state. Use repair to recover them:
 
 ```bash
-solus repair
+solux repair
 ```
 
 ### Checking step timings
@@ -2052,42 +2052,42 @@ solus repair
 After a job completes, its context contains `_step_timings`. View it by running with verbose output:
 
 ```bash
-solus run --workflow my_workflow source.txt --verbose
+solux run --workflow my_workflow source.txt --verbose
 ```
 
 ### Common YAML mistakes
 
 - **Wrong step type**: Use `input.webpage_fetch`, not `webpage_fetch`. Always include the category prefix.
-- **Missing required config**: Check `solus modules inspect <type>` to see required fields.
+- **Missing required config**: Check `solux modules inspect <type>` to see required fields.
 - **`when:` expression syntax**: Only use supported operators; quotes around string values are required: `when: "classification == 'tech'"`.
 - **`foreach:` on non-list**: The referenced context key must be a list at runtime.
 
 ### Secrets not expanding
 
-Ensure the environment variable is exported before Solus runs:
+Ensure the environment variable is exported before Solux runs:
 
 ```bash
 export MY_SECRET=value
-solus run --workflow my_workflow source.txt
+solux run --workflow my_workflow source.txt
 ```
 
-Or source a `.env` file: `source ~/.config/solus/.env`.
+Or source a `.env` file: `source ~/.config/solux/.env`.
 
 ### Module not found after adding to `modules.d/`
 
-The worker hot-reloads every 5 seconds. Wait a moment, or restart it. For `solus run`, the module loads immediately on each invocation.
+The worker hot-reloads every 5 seconds. Wait a moment, or restart it. For `solux run`, the module loads immediately on each invocation.
 
 Check for syntax errors in your module:
 
 ```bash
-python ~/.config/solus/modules.d/my_module.py
+python ~/.config/solux/modules.d/my_module.py
 ```
 
 ### Checking the queue database directly
 
-The SQLite queue is at `~/.local/share/solus/queue/jobs.db`:
+The SQLite queue is at `~/.local/share/solux/queue/jobs.db`:
 
 ```bash
-sqlite3 ~/.local/share/solus/queue/jobs.db "SELECT status, count(*) FROM jobs GROUP BY status;"
-sqlite3 ~/.local/share/solus/queue/jobs.db "SELECT job_id, workflow_name, status, error FROM jobs WHERE status IN ('failed','dead_letter');"
+sqlite3 ~/.local/share/solux/queue/jobs.db "SELECT status, count(*) FROM jobs GROUP BY status;"
+sqlite3 ~/.local/share/solux/queue/jobs.db "SELECT job_id, workflow_name, status, error FROM jobs WHERE status IN ('failed','dead_letter');"
 ```

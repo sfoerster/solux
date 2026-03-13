@@ -1,20 +1,20 @@
-"""Tests for ``solus init`` command."""
+"""Tests for ``solux init`` command."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from solus.cli.init import cmd_init
+from solux.cli.init import cmd_init
 
 
 def test_init_creates_config_and_workflow(monkeypatch, tmp_path: Path, capsys) -> None:
     config_path = tmp_path / "config.toml"
     workflows_dir = tmp_path / "workflows.d"
 
-    monkeypatch.setattr("solus.cli.init.ensure_config_file", lambda: (config_path, True))
+    monkeypatch.setattr("solux.cli.init.ensure_config_file", lambda: (config_path, True))
 
     # Minimal config that load_config can return
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -34,8 +34,8 @@ def test_init_creates_config_and_workflow(monkeypatch, tmp_path: Path, capsys) -
         config_exists=True,
         workflows_dir=workflows_dir,
     )
-    monkeypatch.setattr("solus.cli.init.load_config", lambda _path: cfg)
-    monkeypatch.setattr("solus.cli.init.run_doctor", lambda *_a, **_kw: 0)
+    monkeypatch.setattr("solux.cli.init.load_config", lambda _path: cfg)
+    monkeypatch.setattr("solux.cli.init.run_doctor", lambda *_a, **_kw: 0)
 
     # Mock Ollama as reachable
     class _Resp:
@@ -45,7 +45,7 @@ def test_init_creates_config_and_workflow(monkeypatch, tmp_path: Path, capsys) -
         def json(self):
             return {"models": [{"name": "qwen3:8b"}]}
 
-    monkeypatch.setattr("solus.cli.init.requests.get", lambda *_a, **_kw: _Resp())
+    monkeypatch.setattr("solux.cli.init.requests.get", lambda *_a, **_kw: _Resp())
 
     ret = cmd_init()
     assert ret == 0
@@ -72,9 +72,9 @@ def test_init_idempotent_does_not_overwrite(monkeypatch, tmp_path: Path) -> None
     scaffold = workflows_dir / "my_summarizer.yaml"
     scaffold.write_text("existing content", encoding="utf-8")
 
-    monkeypatch.setattr("solus.cli.init.ensure_config_file", lambda: (config_path, False))
+    monkeypatch.setattr("solux.cli.init.ensure_config_file", lambda: (config_path, False))
 
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -94,8 +94,8 @@ def test_init_idempotent_does_not_overwrite(monkeypatch, tmp_path: Path) -> None
         config_exists=True,
         workflows_dir=workflows_dir,
     )
-    monkeypatch.setattr("solus.cli.init.load_config", lambda _path: cfg)
-    monkeypatch.setattr("solus.cli.init.run_doctor", lambda *_a, **_kw: 0)
+    monkeypatch.setattr("solux.cli.init.load_config", lambda _path: cfg)
+    monkeypatch.setattr("solux.cli.init.run_doctor", lambda *_a, **_kw: 0)
 
     class _Resp:
         def raise_for_status(self):
@@ -104,7 +104,7 @@ def test_init_idempotent_does_not_overwrite(monkeypatch, tmp_path: Path) -> None
         def json(self):
             return {"models": [{"name": "qwen3:8b"}]}
 
-    monkeypatch.setattr("solus.cli.init.requests.get", lambda *_a, **_kw: _Resp())
+    monkeypatch.setattr("solux.cli.init.requests.get", lambda *_a, **_kw: _Resp())
 
     ret = cmd_init()
     assert ret == 0
@@ -117,9 +117,9 @@ def test_init_ollama_unreachable_shows_install_hint(monkeypatch, tmp_path: Path,
     config_path = tmp_path / "config.toml"
     workflows_dir = tmp_path / "workflows.d"
 
-    monkeypatch.setattr("solus.cli.init.ensure_config_file", lambda: (config_path, True))
+    monkeypatch.setattr("solux.cli.init.ensure_config_file", lambda: (config_path, True))
 
-    from solus.config import (
+    from solux.config import (
         BinaryConfig,
         Config,
         OllamaConfig,
@@ -139,12 +139,12 @@ def test_init_ollama_unreachable_shows_install_hint(monkeypatch, tmp_path: Path,
         config_exists=True,
         workflows_dir=workflows_dir,
     )
-    monkeypatch.setattr("solus.cli.init.load_config", lambda _path: cfg)
-    monkeypatch.setattr("solus.cli.init.run_doctor", lambda *_a, **_kw: 0)
+    monkeypatch.setattr("solux.cli.init.load_config", lambda _path: cfg)
+    monkeypatch.setattr("solux.cli.init.run_doctor", lambda *_a, **_kw: 0)
 
     import requests as req
 
-    monkeypatch.setattr("solus.cli.init.requests.get", lambda *_a, **_kw: (_ for _ in ()).throw(req.ConnectionError()))
+    monkeypatch.setattr("solux.cli.init.requests.get", lambda *_a, **_kw: (_ for _ in ()).throw(req.ConnectionError()))
 
     ret = cmd_init()
     assert ret == 0

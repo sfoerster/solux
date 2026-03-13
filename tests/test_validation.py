@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from solus.workflows.loader import load_workflow
-from solus.workflows.models import Step, Workflow
-from solus.workflows.registry import global_registry
-from solus.workflows.validation import ValidationResult, validate_workflow
+from solux.workflows.loader import load_workflow
+from solux.workflows.models import Step, Workflow
+from solux.workflows.registry import global_registry
+from solux.workflows.validation import ValidationResult, validate_workflow
 
 
 def test_valid_audio_summary_workflow() -> None:
@@ -126,8 +126,8 @@ def test_validation_foreach_step_emits_warning_and_injects_keys() -> None:
 
 
 def test_validation_flags_trusted_only_in_untrusted_mode() -> None:
-    from solus.modules.spec import ModuleSpec
-    from solus.workflows.registry import StepRegistry
+    from solux.modules.spec import ModuleSpec
+    from solux.workflows.registry import StepRegistry
 
     def dummy(ctx, step):
         return ctx
@@ -155,8 +155,8 @@ def test_validation_flags_trusted_only_in_untrusted_mode() -> None:
 
 
 def test_validation_allows_trusted_only_in_trusted_mode() -> None:
-    from solus.modules.spec import ModuleSpec
-    from solus.workflows.registry import StepRegistry
+    from solux.modules.spec import ModuleSpec
+    from solux.workflows.registry import StepRegistry
 
     def dummy(ctx, step):
         return ctx
@@ -183,8 +183,8 @@ def test_validation_allows_trusted_only_in_trusted_mode() -> None:
 
 
 def test_validation_blocks_network_module_in_untrusted_mode() -> None:
-    from solus.modules.spec import ModuleSpec
-    from solus.workflows.registry import StepRegistry
+    from solux.modules.spec import ModuleSpec
+    from solux.workflows.registry import StepRegistry
 
     def dummy(ctx, step):
         return ctx
@@ -254,8 +254,8 @@ def test_validation_on_error_emits_warning() -> None:
 
 
 def test_validation_foreach_injects_item_index_for_downstream() -> None:
-    from solus.workflows.registry import StepRegistry, global_registry
-    from solus.modules.spec import ModuleSpec, ContextKey
+    from solux.workflows.registry import StepRegistry, global_registry
+    from solux.modules.spec import ModuleSpec, ContextKey
 
     # Use the global_registry (which has output.file_write) and add a custom reader
     def dummy(ctx, step):
@@ -271,7 +271,7 @@ def test_validation_foreach_injects_item_index_for_downstream() -> None:
     )
 
     # Build a registry with both the real file_write and our custom reader
-    from solus.modules.discovery import discover_modules
+    from solux.modules.discovery import discover_modules
 
     reg = StepRegistry()
     for spec in discover_modules():
