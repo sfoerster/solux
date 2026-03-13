@@ -78,7 +78,8 @@ What already exists and works:
 
 - [x] Choose license (Apache 2.0)
 - [x] Replace the current proprietary license file
-- [ ] Publish to PyPI: `pip install solux` and `pipx install solux`
+- [x] Publish to PyPI: `pip install solux` and `pipx install solux` (v0.5.0, 2026-03-13)
+- [ ] Switch `license = { file = "LICENSE" }` to `license = "Apache-2.0"` (SPDX identifier) — current form embeds the full license text on PyPI
 
 ### 2.2 README & First Impressions
 
@@ -94,9 +95,10 @@ What already exists and works:
 
 ### 2.4 Repository & CI
 
-- [ ] Set up GitHub Actions CI (lint, type check, test matrix on 3.11 + 3.12+)
+- [x] Set up GitHub Actions CI (lint, type check, test matrix on 3.11, 3.12, 3.13)
 - [ ] Add issue templates (bug report, feature request) and PR template
 - [ ] Branch protection on `main` (require CI pass, require review)
+- [ ] Automated PyPI releases — GitHub Actions workflow triggered by `v*` tags: build sdist + wheel, publish to PyPI via trusted publishing or API token
 - [x] `CODEOWNERS` for the public repo
 - [ ] Dependabot or Renovate for dependency updates
 
