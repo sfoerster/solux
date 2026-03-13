@@ -12,6 +12,21 @@ authors = [
 ]
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
+keywords = ["workflow", "automation", "local-first", "LLM", "AI", "Ollama", "MCP"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Typing :: Typed",
+]
 dependencies = [
   "requests>=2.31.0,<3",
   "PyYAML>=6.0,<7",
@@ -49,6 +64,11 @@ encrypt = [
 mcp = [
   "mcp>=1.0,<2",
 ]
+
+[project.urls]
+Repository = "https://github.com/sfoerster/solux"
+Changelog = "https://github.com/sfoerster/solux/blob/main/CHANGELOG.md"
+Issues = "https://github.com/sfoerster/solux/issues"
 
 [project.scripts]
 solux = "solux.cli:main"
