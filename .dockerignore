@@ -6,6 +6,7 @@ tests
 docs
 *.md
 !README.md
+!THIRD_PARTY_NOTICES.md
 __pycache__
 *.pyc
 .mypy_cache
