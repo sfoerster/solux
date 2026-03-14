@@ -8,7 +8,7 @@ solux init
 solux https://example.com/any-article
 ```
 
-That's it. In 60 seconds you go from zero to a working AI pipeline that fetches a webpage, cleans the text, and summarizes it with your local LLM via Ollama.
+That's it. In 60 seconds you go from zero to a working AI pipeline that fetches a webpage, cleans the text, and summarizes it with your local LLM via [Ollama](https://stevenfoerster.com/tutorials/ollama/).
 
 ---
 

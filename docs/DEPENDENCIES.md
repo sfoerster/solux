@@ -85,6 +85,8 @@ pip install -e .
 
 Ollama serves local language models over a simple REST API. Solux uses it for all `ai.llm_*` steps and `ai.embeddings`.
 
+> For a comprehensive guide to Ollama — including Modelfiles, the REST API, hardware sizing, tool-calling models, and Open WebUI — see [Ollama: Run LLMs Locally](https://stevenfoerster.com/tutorials/ollama/). The quick-start below covers the minimum needed for Solux.
+
 ### Install Ollama
 
 **Linux:**
